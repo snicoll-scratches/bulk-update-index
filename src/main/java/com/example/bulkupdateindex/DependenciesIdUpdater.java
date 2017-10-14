@@ -46,7 +46,7 @@ public class DependenciesIdUpdater {
 				.addIndex(index)
 				.addType("request")
 				.addSort(new Sort("_doc"))
-				.setParameter(Parameters.SIZE, 500)
+				.setParameter(Parameters.SIZE, 2000)
 				.setParameter(Parameters.SCROLL, "5m")
 				.build();
 		JestResult result = jestClient.execute(search);
@@ -57,7 +57,7 @@ public class DependenciesIdUpdater {
 		String scrollId = result.getJsonObject().get("_scroll_id").getAsString();
 		int page = 1;
 		while (moreResults) {
-			logger.info("Indexing page " + page + "[" + ((page - 1) * 500) + " to " + (page * 500) + "]");
+			logger.info("Indexing page " + page + "[" + ((page - 1) * 2000) + " to " + (page * 2000) + "]");
 			SearchScroll scroll = new SearchScroll.Builder(scrollId, "5m").build();
 			result = jestClient.execute(scroll);
 			moreResults = processPage(result);
