@@ -20,4 +20,11 @@ public class BulkUpdateIndexApplication {
 			//updater.indexDependencies("initializr-2015");
 		};
 	}
+
+	@Bean
+	public ApplicationRunner moduleVersionsUpdate(ModuleVersionUpdater updater) throws IOException {
+		return (args) -> {
+			//updater.indexVersions();
+		};
+	}
 }
