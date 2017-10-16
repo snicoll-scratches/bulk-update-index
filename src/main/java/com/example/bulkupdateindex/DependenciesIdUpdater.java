@@ -9,14 +9,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.searchbox.client.JestClient;
-import io.searchbox.client.JestResult;
-import io.searchbox.core.Bulk;
-import io.searchbox.core.BulkResult;
 import io.searchbox.core.Search;
-import io.searchbox.core.SearchScroll;
 import io.searchbox.core.Update;
-import io.searchbox.core.search.sort.Sort;
-import io.searchbox.params.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,61 +28,18 @@ public class DependenciesIdUpdater {
 
 	private static final Logger logger = LoggerFactory.getLogger(DependenciesIdUpdater.class);
 
-	private final JestClient jestClient;
+	private final BulkUpdateIndex bulkUpdateIndex;
 
 	public DependenciesIdUpdater(JestClient jestClient) {
-		this.jestClient = jestClient;
+		this.bulkUpdateIndex = new BulkUpdateIndex(jestClient);
 	}
 
 	public void indexDependencies(String index) throws IOException {
 		logger.info("Reindexing dependencies for " + index);
-		Search search = new Search.Builder("")
+		Search.Builder searchBuilder = new Search.Builder("")
 				.addIndex(index)
-				.addType("request")
-				.addSort(new Sort("_doc"))
-				.setParameter(Parameters.SIZE, 2000)
-				.setParameter(Parameters.SCROLL, "5m")
-				.build();
-		JestResult result = jestClient.execute(search);
-		if (!result.isSucceeded()) {
-			throw new IllegalStateException("Query failed " + result.getErrorMessage());
-		}
-		boolean moreResults = processPage(result);
-		String scrollId = result.getJsonObject().get("_scroll_id").getAsString();
-		int page = 1;
-		while (moreResults) {
-			logger.info("Indexing page " + page + "[" + ((page - 1) * 2000) + " to " + (page * 2000) + "]");
-			SearchScroll scroll = new SearchScroll.Builder(scrollId, "5m").build();
-			result = jestClient.execute(scroll);
-			moreResults = processPage(result);
-			page++;
-		}
-	}
-
-	private boolean processPage(JestResult result) throws IOException {
-		JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-		if (hits.size() == 0) {
-			logger.info("No more elements");
-			return false;
-		}
-		List<Update> updates = new ArrayList<>();
-		for (JsonElement hit : hits) {
-			JsonObject request = hit.getAsJsonObject();
-			Update action = updateDependenciesId(request);
-			if (action != null) {
-				updates.add(action);
-			}
-		}
-		if (!updates.isEmpty()) {
-			Bulk.Builder bulkUpdate = new Bulk.Builder();
-			updates.forEach(bulkUpdate::addAction);
-			logger.info(String.format("Updating %s elements", updates.size()));
-			BulkResult updateResult = jestClient.execute(bulkUpdate.build());
-			if (!ObjectUtils.isEmpty(updateResult.getFailedItems())) {
-				logger.error("Failed to update elements " + updateResult.getFailedItems());
-			}
-		}
-		return true;
+				.addType("request");
+		bulkUpdateIndex.update(searchBuilder, 2000, this::updateDependenciesId);
 	}
 
 	private Update updateDependenciesId(JsonObject hit) {
