@@ -50,6 +50,10 @@ public class DependenciesIdUpdater {
 		if (source.has("dependenciesId")) {
 			return null;
 		}
+		if (source.has("invalidDependencies")
+				&& source.get("invalidDependencies").getAsJsonArray().size() > 0) {
+			return null;
+		}
 		else {
 			String dependenciesId = computeDependenciesId(getRawDependencies(source));
 			String updatedJson = "{ \"doc\" : { \"dependenciesId\" : \"" + dependenciesId + "\" } }";
