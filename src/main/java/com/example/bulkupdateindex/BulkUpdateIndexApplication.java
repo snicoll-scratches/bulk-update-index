@@ -17,7 +17,7 @@ public class BulkUpdateIndexApplication {
 	@Bean
 	public ApplicationRunner applicationRunner(DependenciesIdUpdater updater) throws IOException {
 		return (args) -> {
-			//updater.indexDependencies("initializr-2015");
+			updater.indexDependencies("initializr-2017");
 		};
 	}
 
