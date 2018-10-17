@@ -55,8 +55,13 @@ public class DependenciesIdUpdater {
 			return null;
 		}
 		else {
-			String dependenciesId = computeDependenciesId(getRawDependencies(source));
-			String updatedJson = "{ \"doc\" : { \"dependenciesId\" : \"" + dependenciesId + "\" } }";
+			List<String> rawDependencies = getRawDependencies(source);
+			String dependenciesId = computeDependenciesId(rawDependencies);
+			int dependenciesCount = rawDependencies.size();
+			String updatedJson = "{ \"doc\" : { "
+					+ "\"dependenciesId\" : \"" + dependenciesId + "\", "
+					+ "\"dependenciesCount\" : " + dependenciesCount + " } "
+					+ "}";
 			return new Update.Builder(updatedJson).index(index).id(id).type(type).build();
 		}
 	}
