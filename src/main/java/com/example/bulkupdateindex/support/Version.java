@@ -48,8 +48,11 @@ public final class Version implements Serializable, Comparable<Version> {
 			new VersionParser(Collections.emptyList());
 
 	private final Integer major;
+
 	private final Integer minor;
+
 	private final Integer patch;
+
 	private final Qualifier qualifier;
 
 	// For Jackson
@@ -89,18 +92,6 @@ public final class Version implements Serializable, Comparable<Version> {
 	}
 
 	/**
-	 * Parse the string representation of a {@link Version}. Throws an
-	 * {@link InvalidVersionException} if the version could not be parsed.
-	 * @param text the version text
-	 * @return a Version instance for the specified version text
-	 * @throws InvalidVersionException if the version text could not be parsed
-	 * @see VersionParser
-	 */
-	public static Version parse(String text) {
-		return parser.parse(text);
-	}
-
-	/**
 	 * Parse safely the specified string representation of a {@link Version}.
 	 * <p>
 	 * Return {@code null} if the text represents an invalid version.
@@ -110,7 +101,7 @@ public final class Version implements Serializable, Comparable<Version> {
 	 */
 	public static Version safeParse(String text) {
 		try {
-			return parse(text);
+			return parser.parse(text);
 		}
 		catch (InvalidVersionException e) {
 			return null;
@@ -150,6 +141,7 @@ public final class Version implements Serializable, Comparable<Version> {
 		}
 
 		private String qualifier;
+
 		private Integer version;
 
 		public String getQualifier() {
@@ -260,8 +252,11 @@ public final class Version implements Serializable, Comparable<Version> {
 	private static class VersionQualifierComparator implements Comparator<Qualifier> {
 
 		static final String RELEASE = "RELEASE";
+
 		static final String SNAPSHOT = "BUILD-SNAPSHOT";
+
 		static final String MILESTONE = "M";
+
 		static final String RC = "RC";
 
 		static final List<String> KNOWN_QUALIFIERS = Arrays.asList(MILESTONE, RC,
