@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.bulkupdateindex.download;
 
 import java.net.URLDecoder;
@@ -42,7 +58,7 @@ class DownloadCountAggregation {
 
 	boolean handle(JsonObject source, JsonObject stat) {
 		long count = stat.get("count").getAsLong();
-		totalCount += count;
+		this.totalCount += count;
 		String version = cleanVersion(stat.get("version").getAsString());
 
 		Version standardVersion = Version.safeParse(version);
@@ -92,11 +108,11 @@ class DownloadCountAggregation {
 	private void handle(String major, String minor, Long count) {
 		if (major != null) {
 			this.majorGenerations.compute(major,
-					(key, v) -> (v == null) ? count : v + count);
+					(key, v) -> (v != null) ? v + count : count);
 		}
 		if (minor != null) {
 			this.minorGenerations.compute(minor,
-					(key, v) -> (v == null) ? count : v + count);
+					(key, v) -> (v != null) ? v + count : count);
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.example.bulkupdateindex.support.Version.Qualifier;
+
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -40,11 +42,14 @@ import org.springframework.util.StringUtils;
  */
 public class VersionParser {
 
+	/**
+	 * The default {@link VersionParser}.
+	 */
 	public static final VersionParser DEFAULT = new VersionParser(
 			Collections.emptyList());
 
 	private static final Pattern VERSION_REGEX = Pattern
-			.compile("^(\\d+)\\.(\\d+|x)\\.(\\d+|x)(?:[.|-]([^0-9]+)(\\d+)?)?$");
+			.compile("^(\\d+)\\.(\\d+|x)\\.(\\d+|x)(?:\\.([^0-9]+)(\\d+)?)?$");
 
 	private final List<Version> latestVersions;
 
@@ -58,7 +63,7 @@ public class VersionParser {
 	 * @param text the version text
 	 * @return a Version instance for the specified version text
 	 * @throws InvalidVersionException if the version text could not be parsed
-	 * @see #safeParse(String)
+	 * @see #safeParse(java.lang.String)
 	 */
 	public Version parse(String text) {
 		Assert.notNull(text, "Text must not be null");
@@ -71,7 +76,7 @@ public class VersionParser {
 		Integer major = Integer.valueOf(matcher.group(1));
 		String minor = matcher.group(2);
 		String patch = matcher.group(3);
-		Version.Qualifier qualifier = null;
+		Qualifier qualifier = null;
 		String qualifierId = matcher.group(4);
 		if (StringUtils.hasText(qualifierId)) {
 			qualifier = new Version.Qualifier(qualifierId);
@@ -81,7 +86,7 @@ public class VersionParser {
 			}
 		}
 		if ("x".equals(minor) || "x".equals(patch)) {
-			Integer minorInt = "x".equals(minor) ? null : Integer.parseInt(minor);
+			Integer minorInt = ("x".equals(minor) ? null : Integer.parseInt(minor));
 			Version latest = findLatestVersion(major, minorInt, qualifier);
 			if (latest == null) {
 				return new Version(major,
@@ -103,7 +108,7 @@ public class VersionParser {
 	 * Return {@code null} if the text represents an invalid version.
 	 * @param text the version text
 	 * @return a Version instance for the specified version text
-	 * @see #parse(String)
+	 * @see #parse(java.lang.String)
 	 */
 	public Version safeParse(String text) {
 		try {
@@ -116,7 +121,7 @@ public class VersionParser {
 
 	private Version findLatestVersion(Integer major, Integer minor,
 			Version.Qualifier qualifier) {
-		List<Version> matches = this.latestVersions.stream().filter(it -> {
+		List<Version> matches = this.latestVersions.stream().filter((it) -> {
 			if (major != null && !major.equals(it.getMajor())) {
 				return false;
 			}
@@ -128,7 +133,7 @@ public class VersionParser {
 			}
 			return true;
 		}).collect(Collectors.toList());
-		return (matches.size() == 1 ? matches.get(0) : null);
+		return (matches.size() != 1) ? null : matches.get(0);
 	}
 
 }

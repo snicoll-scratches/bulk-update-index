@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.bulkupdateindex;
 
 import java.io.IOException;
@@ -51,7 +67,7 @@ public class BulkUpdateIndex {
 		Search search = searchBuilder.addSort(new Sort("_doc"))
 				.setParameter(Parameters.SIZE, pageSize)
 				.setParameter(Parameters.SCROLL, "5m").build();
-		JestResult result = jestClient.execute(search);
+		JestResult result = this.jestClient.execute(search);
 		if (!result.isSucceeded()) {
 			throw new IllegalStateException("Query failed " + result.getErrorMessage());
 		}
@@ -62,7 +78,7 @@ public class BulkUpdateIndex {
 			logger.info("Indexing page " + page + "[" + ((page - 1) * pageSize) + " to "
 					+ (page * pageSize) + "]");
 			SearchScroll scroll = new SearchScroll.Builder(scrollId, "5m").build();
-			result = jestClient.execute(scroll);
+			result = this.jestClient.execute(scroll);
 			moreResults = processPage(result, updateFunction);
 			page++;
 		}
@@ -87,7 +103,7 @@ public class BulkUpdateIndex {
 			Bulk.Builder bulkUpdate = new Bulk.Builder();
 			updates.forEach(bulkUpdate::addAction);
 			logger.info(String.format("Updating %s elements", updates.size()));
-			BulkResult updateResult = jestClient.execute(bulkUpdate.build());
+			BulkResult updateResult = this.jestClient.execute(bulkUpdate.build());
 			if (!ObjectUtils.isEmpty(updateResult.getFailedItems())) {
 				logger.error(
 						"Failed to update elements " + updateResult.getFailedItems());

@@ -84,9 +84,8 @@
 						<id>checkstyle-validation</id>
 						<phase>validate</phase>
 						<configuration>
-							<configLocation>
-								io/spring/javaformat/checkstyle/checkstyle.xml
-							</configLocation>
+							<configLocation>io/spring/javaformat/checkstyle/checkstyle.xml</configLocation>
+							<suppressionsLocation>src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
 						</configuration>
 						<goals>
