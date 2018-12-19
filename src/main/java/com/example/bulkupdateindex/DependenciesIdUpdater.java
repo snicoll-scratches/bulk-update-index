@@ -26,7 +26,8 @@ import org.springframework.util.StringUtils;
 @Component
 public class DependenciesIdUpdater {
 
-	private static final Logger logger = LoggerFactory.getLogger(DependenciesIdUpdater.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(DependenciesIdUpdater.class);
 
 	private final BulkUpdateIndex bulkUpdateIndex;
 
@@ -36,8 +37,7 @@ public class DependenciesIdUpdater {
 
 	public void indexDependencies(String index) throws IOException {
 		logger.info("Reindexing dependencies for " + index);
-		Search.Builder searchBuilder = new Search.Builder("")
-				.addIndex(index)
+		Search.Builder searchBuilder = new Search.Builder("").addIndex(index)
 				.addType("request");
 		bulkUpdateIndex.update(searchBuilder, 2000, this::updateDependenciesId);
 	}
@@ -58,10 +58,9 @@ public class DependenciesIdUpdater {
 			List<String> rawDependencies = getRawDependencies(source);
 			String dependenciesId = computeDependenciesId(rawDependencies);
 			int dependenciesCount = rawDependencies.size();
-			String updatedJson = "{ \"doc\" : { "
-					+ "\"dependenciesId\" : \"" + dependenciesId + "\", "
-					+ "\"dependenciesCount\" : " + dependenciesCount + " } "
-					+ "}";
+			String updatedJson = "{ \"doc\" : { " + "\"dependenciesId\" : \""
+					+ dependenciesId + "\", " + "\"dependenciesCount\" : "
+					+ dependenciesCount + " } " + "}";
 			return new Update.Builder(updatedJson).index(index).id(id).type(type).build();
 		}
 	}

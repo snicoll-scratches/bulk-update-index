@@ -26,8 +26,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Parser for {@link Version} that allows to resolve the minor and patch value against
- * a configurable list of "latest versions".
+ * Parser for {@link Version} that allows to resolve the minor and patch value against a
+ * configurable list of "latest versions".
  * <p>
  * For example a parser that is configured with {@code 1.3.7.RELEASE} and
  * {@code 1.4.2.RELEASE} as latest versions can parse {@code 1.3.x.RELEASE} to
@@ -40,10 +40,11 @@ import org.springframework.util.StringUtils;
  */
 public class VersionParser {
 
-	public static final VersionParser DEFAULT = new VersionParser(Collections.emptyList());
+	public static final VersionParser DEFAULT = new VersionParser(
+			Collections.emptyList());
 
-	private static final Pattern VERSION_REGEX =
-			Pattern.compile("^(\\d+)\\.(\\d+|x)\\.(\\d+|x)(?:[.|-]([^0-9]+)(\\d+)?)?$");
+	private static final Pattern VERSION_REGEX = Pattern
+			.compile("^(\\d+)\\.(\\d+|x)\\.(\\d+|x)(?:[.|-]([^0-9]+)(\\d+)?)?$");
 
 	private final List<Version> latestVersions;
 
@@ -63,9 +64,9 @@ public class VersionParser {
 		Assert.notNull(text, "Text must not be null");
 		Matcher matcher = VERSION_REGEX.matcher(text.trim());
 		if (!matcher.matches()) {
-			throw new InvalidVersionException("Could not determine version based on '"
-					+ text + "': version format " + "is Minor.Major.Patch.Qualifier "
-					+ "(e.g. 1.0.5.RELEASE)");
+			throw new InvalidVersionException(
+					"Could not determine version based on '" + text + "': version format "
+							+ "is Minor.Major.Patch.Qualifier " + "(e.g. 1.0.5.RELEASE)");
 		}
 		Integer major = Integer.valueOf(matcher.group(1));
 		String minor = matcher.group(2);
@@ -83,8 +84,8 @@ public class VersionParser {
 			Integer minorInt = "x".equals(minor) ? null : Integer.parseInt(minor);
 			Version latest = findLatestVersion(major, minorInt, qualifier);
 			if (latest == null) {
-				return new Version(major, ("x".equals(minor) ? 999
-						: Integer.parseInt(minor)),
+				return new Version(major,
+						("x".equals(minor) ? 999 : Integer.parseInt(minor)),
 						("x".equals(patch) ? 999 : Integer.parseInt(patch)), qualifier);
 			}
 			return new Version(major, latest.getMinor(), latest.getPatch(),

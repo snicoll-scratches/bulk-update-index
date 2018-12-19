@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- *
  * @author Stephane Nicoll
  */
 @Component
@@ -25,8 +24,7 @@ public class ModuleIndexer {
 
 	public void indexModules(BulkUpdateIndex bulkUpdateIndex) throws IOException {
 		logger.info("Reindexing versions");
-		Search.Builder searchBuilder = new Search.Builder("")
-				.addIndex("projects")
+		Search.Builder searchBuilder = new Search.Builder("").addIndex("projects")
 				.addType("download");
 		bulkUpdateIndex.update(searchBuilder, 2000, this::index);
 	}
@@ -46,17 +44,19 @@ public class ModuleIndexer {
 	}
 
 	protected boolean migrate(JsonObject source) {
-		if (source.has("totalCount") && (source.has("majorGenerations")
-				&& (source.has("minorGenerations")))) {
+		if (source.has("totalCount")
+				&& (source.has("majorGenerations") && (source.has("minorGenerations")))) {
 			return false;
 		}
 		DownloadCountAggregation aggregation = computeAggregation(source);
 		source.addProperty("totalCount", aggregation.getTotalCount());
 		if (!aggregation.getMajorGenerations().isEmpty()) {
-			source.add("majorGenerations", toJsonArray(aggregation.getMajorGenerations()));
+			source.add("majorGenerations",
+					toJsonArray(aggregation.getMajorGenerations()));
 		}
 		if (!aggregation.getMinorGenerations().isEmpty()) {
-			source.add("minorGenerations", toJsonArray(aggregation.getMinorGenerations()));
+			source.add("minorGenerations",
+					toJsonArray(aggregation.getMinorGenerations()));
 		}
 		return true;
 	}

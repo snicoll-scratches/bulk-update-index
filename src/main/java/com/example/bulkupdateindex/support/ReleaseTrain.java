@@ -4,17 +4,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
  * @author Stephane Nicoll
  */
 public class ReleaseTrain {
 
 	private final String name;
+
 	private final String qualifier;
 
-	private static final Pattern RELEASE_TRAIN_REGEX =
-			Pattern.compile("([A-Za-z]*)(_|-|.)([A-Za-z0-9_-]*)");
-
+	private static final Pattern RELEASE_TRAIN_REGEX = Pattern
+			.compile("([A-Za-z]*)(_|-|.)([A-Za-z0-9_-]*)");
 
 	public ReleaseTrain(String name, String qualifier) {
 		this.name = name;
@@ -38,4 +37,5 @@ public class ReleaseTrain {
 		String qualifier = matcher.group(3);
 		return new ReleaseTrain(name, qualifier);
 	}
+
 }

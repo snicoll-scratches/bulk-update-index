@@ -48,11 +48,9 @@ public class BulkUpdateIndex {
 	 */
 	public void update(Search.Builder searchBuilder, int pageSize,
 			Function<JsonObject, Update> updateFunction) throws IOException {
-		Search search = searchBuilder
-				.addSort(new Sort("_doc"))
+		Search search = searchBuilder.addSort(new Sort("_doc"))
 				.setParameter(Parameters.SIZE, pageSize)
-				.setParameter(Parameters.SCROLL, "5m")
-				.build();
+				.setParameter(Parameters.SCROLL, "5m").build();
 		JestResult result = jestClient.execute(search);
 		if (!result.isSucceeded()) {
 			throw new IllegalStateException("Query failed " + result.getErrorMessage());
@@ -61,7 +59,8 @@ public class BulkUpdateIndex {
 		String scrollId = result.getJsonObject().get("_scroll_id").getAsString();
 		int page = 1;
 		while (moreResults) {
-			logger.info("Indexing page " + page + "[" + ((page - 1) * pageSize) + " to " + (page * pageSize) + "]");
+			logger.info("Indexing page " + page + "[" + ((page - 1) * pageSize) + " to "
+					+ (page * pageSize) + "]");
 			SearchScroll scroll = new SearchScroll.Builder(scrollId, "5m").build();
 			result = jestClient.execute(scroll);
 			moreResults = processPage(result, updateFunction);
@@ -71,7 +70,8 @@ public class BulkUpdateIndex {
 
 	private boolean processPage(JestResult result,
 			Function<JsonObject, Update> updateFunction) throws IOException {
-		JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+		JsonArray hits = result.getJsonObject().getAsJsonObject("hits")
+				.getAsJsonArray("hits");
 		if (hits.size() == 0) {
 			logger.info("No more elements");
 			return false;
@@ -89,7 +89,8 @@ public class BulkUpdateIndex {
 			logger.info(String.format("Updating %s elements", updates.size()));
 			BulkResult updateResult = jestClient.execute(bulkUpdate.build());
 			if (!ObjectUtils.isEmpty(updateResult.getFailedItems())) {
-				logger.error("Failed to update elements " + updateResult.getFailedItems());
+				logger.error(
+						"Failed to update elements " + updateResult.getFailedItems());
 			}
 		}
 		else {

@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
  */
 class DownloadCountAggregation {
 
-	private static final Logger logger = LoggerFactory.getLogger(DownloadCountAggregation.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(DownloadCountAggregation.class);
 
 	private long totalCount;
 
@@ -64,7 +65,8 @@ class DownloadCountAggregation {
 
 		String moduleId = source.get("groupId").getAsString() + " - "
 				+ source.get("artifactId").getAsString();
-		logger.warn(String.format("Skipping %s [count=%s, version='%s']", moduleId, count, version));
+		logger.warn(String.format("Skipping %s [count=%s, version='%s']", moduleId, count,
+				version));
 		return false;
 	}
 
@@ -82,24 +84,24 @@ class DownloadCountAggregation {
 
 	private void handleVersion(Version standardVersion, long count) {
 		String major = String.format("%s", standardVersion.getMajor());
-		String minor = (standardVersion.getMinor() != null)
-				? String.format("%s.%s", standardVersion.getMajor(), standardVersion.getMinor())
-				: null;
+		String minor = (standardVersion.getMinor() != null) ? String.format("%s.%s",
+				standardVersion.getMajor(), standardVersion.getMinor()) : null;
 		handle(major, minor, count);
 	}
 
 	private void handle(String major, String minor, Long count) {
 		if (major != null) {
-			this.majorGenerations.compute(major, (key, v) -> (v == null) ? count : v + count);
+			this.majorGenerations.compute(major,
+					(key, v) -> (v == null) ? count : v + count);
 		}
 		if (minor != null) {
-			this.minorGenerations.compute(minor, (key, v) -> (v == null) ? count : v + count);
+			this.minorGenerations.compute(minor,
+					(key, v) -> (v == null) ? count : v + count);
 		}
 	}
 
-	private static final Pattern NON_STANDARD_VERSION_REGEX =
-			Pattern.compile("^(\\d+)\\.(\\d+|x)(?:[.|-]([^0-9]+)(\\d+)?)?$");
-
+	private static final Pattern NON_STANDARD_VERSION_REGEX = Pattern
+			.compile("^(\\d+)\\.(\\d+|x)(?:[.|-]([^0-9]+)(\\d+)?)?$");
 
 	private Version safeNonStandardVersionParse(String text) {
 		Matcher matcher = NON_STANDARD_VERSION_REGEX.matcher(text.trim());
