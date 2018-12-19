@@ -5,6 +5,7 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for {@link ReleaseTrain}.
  *
  * @author Stephane Nicoll
  */
@@ -39,5 +40,5 @@ public class ReleaseTrainTests {
 		ReleaseTrain releaseTrain = ReleaseTrain.safeParse("1.0-rc1");
 		assertThat(releaseTrain).isNull();
 	}
-	
+
 }
