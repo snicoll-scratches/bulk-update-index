@@ -1,0 +1,51 @@
+{
+  "_index": "projects",
+  "_type": "download",
+  "_id": "AWeOYlRMe8fT5tlzG1x4",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "from": 1541030400000,
+    "to": 1543622399000,
+    "projectId": "test",
+    "groupId": "com.example",
+    "artifactId": "spring-test",
+    "stats": [
+      {
+        "source": "central",
+        "version": "4%2E1%2E6%2ERELEASE",
+        "count": 20
+      },
+      {
+        "source": "central",
+        "version": "?4.1.0.RELEASE",
+        "count": 10
+      },
+      {
+        "source": "central",
+        "version": "?2.5.6",
+        "count": 5
+      },
+      {
+        "source": "central",
+        "version": "2.0-m1",
+        "count": 50
+      },
+      {
+        "source": "central",
+        "version": "${spring.version}",
+        "count": 5
+      },
+      {
+        "source": "central",
+        "version": "",
+        "count": 5
+      },
+      {
+        "source": "central",
+        "version": "3..0.RELEASE",
+        "count": 5
+      }
+    ]
+  }
+}

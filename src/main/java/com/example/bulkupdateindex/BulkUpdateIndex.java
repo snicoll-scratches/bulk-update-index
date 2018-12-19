@@ -20,6 +20,7 @@ import io.searchbox.params.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -27,6 +28,7 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Stephane Nicoll
  */
+@Component
 public class BulkUpdateIndex {
 
 	private static final Logger logger = LoggerFactory.getLogger(BulkUpdateIndex.class);

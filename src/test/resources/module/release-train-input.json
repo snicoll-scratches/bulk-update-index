@@ -1,0 +1,61 @@
+{
+  "_index": "projects",
+  "_type": "download",
+  "_id": "AWeOZUbWe8fT5tlzG2FU",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "from": 1541030400000,
+    "to": 1543622399000,
+    "projectId": "spring-data",
+    "groupId": "org.springframework.data",
+    "artifactId": "spring-data-releasetrain",
+    "stats": [
+      {
+        "source": "central",
+        "version": "Codd-SR2",
+        "count": 50
+      },
+      {
+        "source": "central",
+        "version": "Dijkstra-RELEASE",
+        "count": 200
+      },
+      {
+        "source": "central",
+        "version": "Dijkstra-SR1",
+        "count": 100
+      },
+      {
+        "source": "central",
+        "version": "Dijkstra-SR3",
+        "count": 200
+      },
+      {
+        "source": "central",
+        "version": "Gosling-SR1",
+        "count": 100
+      },
+      {
+        "source": "central",
+        "version": "Gosling-SR2A",
+        "count": 400
+      },
+      {
+        "source": "central",
+        "version": "Gosling-SR4",
+        "count": 150
+      },
+      {
+        "source": "central",
+        "version": "1.3.0.RELEASE",
+        "count": 50
+      },
+      {
+        "source": "central",
+        "version": "1.4.6.RELEASE",
+        "count": 150
+      }
+    ]
+  }
+}
