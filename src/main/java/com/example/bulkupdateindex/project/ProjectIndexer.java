@@ -16,9 +16,17 @@
 
 package com.example.bulkupdateindex.project;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.example.bulkupdateindex.support.Version;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Index the {@code initializr} document to add more information about versions and more
@@ -29,10 +37,11 @@ import com.google.gson.JsonObject;
 public class ProjectIndexer {
 
 	protected boolean migrate(JsonObject source) {
-		if (source.has("version")) {
+		if (source.has("version") || source.has("dependenciesId")) {
 			return false;
 		}
 		indexVersion(source);
+		indexDependenciesId(source);
 		return true;
 	}
 
@@ -50,6 +59,14 @@ public class ProjectIndexer {
 		}
 	}
 
+	private void indexDependenciesId(JsonObject source) {
+		List<String> dependencies = determineRawDependencies(source);
+		if (dependencies != null) {
+			String dependenciesId = computeDependenciesId(dependencies);
+			source.addProperty("dependenciesId", dependenciesId);
+		}
+	}
+
 	private Version determineSpringBootVersion(JsonObject source) {
 		JsonElement versionEl = source.get("bootVersion");
 		if (versionEl != null) {
@@ -60,6 +77,30 @@ public class ProjectIndexer {
 			}
 		}
 		return null;
+	}
+
+	private List<String> determineRawDependencies(JsonObject source) {
+		if (source.has("invalidDependencies")
+				&& source.get("invalidDependencies").getAsJsonArray().size() > 0) {
+			return null;
+		}
+		JsonArray array = source.getAsJsonArray("dependencies");
+		if (array == null) {
+			return Collections.emptyList();
+		}
+		List<String> result = new ArrayList<>();
+		for (JsonElement jsonElement : array) {
+			result.add(jsonElement.getAsString());
+		}
+		return result;
+	}
+
+	private String computeDependenciesId(List<String> dependencies) {
+		if (ObjectUtils.isEmpty(dependencies)) {
+			return "_none";
+		}
+		Collections.sort(dependencies);
+		return StringUtils.collectionToDelimitedString(dependencies, " ");
 	}
 
 }

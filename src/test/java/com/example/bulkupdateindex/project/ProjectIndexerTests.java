@@ -49,6 +49,14 @@ public class ProjectIndexerTests {
 		assertThat(version.get("minor").getAsString()).isEqualTo("2.1");
 	}
 
+	@Test
+	public void indexDependenciesId() {
+		JsonObject source = readSource("project/simple-input.json");
+		assertThat(this.indexer.migrate(source)).isTrue();
+		assertThat(source.has("dependenciesId")).isTrue();
+		assertThat(source.get("dependenciesId").getAsString()).isEqualTo("security web");
+	}
+
 	private JsonObject readSource(String location) {
 		return read(location).getAsJsonObject("_source");
 	}

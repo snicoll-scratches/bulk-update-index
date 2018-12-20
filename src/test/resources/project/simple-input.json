@@ -17,8 +17,8 @@
     "packaging": "jar",
     "type": "maven-project",
     "dependencies": [
-      "security",
-      "web"
+      "web",
+      "security"
     ],
     "invalid": false,
     "invalidJavaVersion": false,
