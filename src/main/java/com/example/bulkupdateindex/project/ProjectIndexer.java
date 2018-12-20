@@ -37,11 +37,12 @@ import org.springframework.util.StringUtils;
 public class ProjectIndexer {
 
 	protected boolean migrate(JsonObject source) {
-		if (source.has("version") || source.has("dependenciesId")) {
+		if (source.has("version") && source.has("dependenciesId")
+				&& source.has("dependenciesCount")) {
 			return false;
 		}
 		indexVersion(source);
-		indexDependenciesId(source);
+		indexDependencies(source);
 		return true;
 	}
 
@@ -59,11 +60,12 @@ public class ProjectIndexer {
 		}
 	}
 
-	private void indexDependenciesId(JsonObject source) {
+	private void indexDependencies(JsonObject source) {
 		List<String> dependencies = determineRawDependencies(source);
 		if (dependencies != null) {
 			String dependenciesId = computeDependenciesId(dependencies);
 			source.addProperty("dependenciesId", dependenciesId);
+			source.addProperty("dependenciesCount", dependencies.size());
 		}
 	}
 
