@@ -16,26 +16,41 @@
 
 package com.example.bulkupdateindex.project;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.example.bulkupdateindex.AbstractIndexer;
+import com.example.bulkupdateindex.BulkUpdateIndex;
 import com.example.bulkupdateindex.support.Version;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.searchbox.core.Search;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Index the {@code initializr} document to add more information about versions and more
+ * Index the {@code initializr} requests to add more information about versions and more
  * structure for selected dependencies.
  *
  * @author Stephane Nicoll
  */
 public class ProjectIndexer extends AbstractIndexer {
+
+	private static final Logger logger = LoggerFactory.getLogger(ProjectIndexer.class);
+
+	public void indexRequests(BulkUpdateIndex bulkUpdateIndex, String indexName)
+			throws IOException {
+		logger.info("Reindexing generated project requests");
+		Search.Builder searchBuilder = new Search.Builder("").addIndex(indexName)
+				.addType("request");
+		bulkUpdateIndex.update(searchBuilder, 2000, this::index);
+	}
 
 	protected boolean migrate(JsonObject source) {
 		if (source.has("version") && source.has("dependenciesId")
