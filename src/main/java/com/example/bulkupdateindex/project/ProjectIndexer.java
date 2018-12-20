@@ -20,11 +20,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.example.bulkupdateindex.AbstractIndexer;
 import com.example.bulkupdateindex.support.Version;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import io.searchbox.core.Update;
 
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -35,7 +35,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Stephane Nicoll
  */
-public class ProjectIndexer {
+public class ProjectIndexer extends AbstractIndexer {
 
 	protected boolean migrate(JsonObject source) {
 		if (source.has("version") && source.has("dependenciesId")
@@ -45,20 +45,6 @@ public class ProjectIndexer {
 		indexVersion(source);
 		indexDependencies(source);
 		return true;
-	}
-
-	protected Update index(JsonObject input) {
-		String id = input.get("_id").getAsString();
-		String index = input.get("_index").getAsString();
-		String type = input.get("_type").getAsString();
-		JsonObject source = input.getAsJsonObject("_source");
-		boolean modified = migrate(source);
-		if (modified) {
-			JsonObject object = new JsonObject();
-			object.add("doc", source);
-			return new Update.Builder(object).index(index).id(id).type(type).build();
-		}
-		return null;
 	}
 
 	private void indexVersion(JsonObject source) {

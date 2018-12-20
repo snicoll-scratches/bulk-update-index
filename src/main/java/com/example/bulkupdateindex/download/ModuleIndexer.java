@@ -19,12 +19,12 @@ package com.example.bulkupdateindex.download;
 import java.io.IOException;
 import java.util.Map;
 
+import com.example.bulkupdateindex.AbstractIndexer;
 import com.example.bulkupdateindex.BulkUpdateIndex;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.searchbox.core.Search;
-import io.searchbox.core.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
  * @author Stephane Nicoll
  */
 @Component
-public class ModuleIndexer {
+public class ModuleIndexer extends AbstractIndexer {
 
 	private static final Logger logger = LoggerFactory.getLogger(ModuleIndexer.class);
 
@@ -45,20 +45,6 @@ public class ModuleIndexer {
 		Search.Builder searchBuilder = new Search.Builder("").addIndex("projects")
 				.addType("download");
 		bulkUpdateIndex.update(searchBuilder, 2000, this::index);
-	}
-
-	protected Update index(JsonObject input) {
-		String id = input.get("_id").getAsString();
-		String index = input.get("_index").getAsString();
-		String type = input.get("_type").getAsString();
-		JsonObject source = input.getAsJsonObject("_source");
-		boolean modified = migrate(source);
-		if (modified) {
-			JsonObject object = new JsonObject();
-			object.add("doc", source);
-			return new Update.Builder(object).index(index).id(id).type(type).build();
-		}
-		return null;
 	}
 
 	protected boolean migrate(JsonObject source) {
