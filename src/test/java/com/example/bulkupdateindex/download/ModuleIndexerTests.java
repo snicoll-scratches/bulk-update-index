@@ -39,12 +39,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ModuleIndexerTests {
 
-	private final ModuleIndexer updater = new ModuleIndexer();
+	private final ModuleIndexer indexer = new ModuleIndexer();
 
 	@Test
 	public void simpleMigrationComputeTotalDownloads() {
 		JsonObject source = readSource("module/simple-input.json");
-		assertThat(this.updater.migrate(source)).isTrue();
+		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("totalCount")).isTrue();
 		assertThat(source.getAsJsonPrimitive("totalCount").getAsLong()).isEqualTo(170);
 	}
@@ -52,7 +52,7 @@ public class ModuleIndexerTests {
 	@Test
 	public void simpleMigrationComputeMajorVersions() {
 		JsonObject source = readSource("module/simple-input.json");
-		assertThat(this.updater.migrate(source)).isTrue();
+		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("majorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("majorGenerations");
 		assertThat(generations).hasSize(2);
@@ -63,7 +63,7 @@ public class ModuleIndexerTests {
 	@Test
 	public void simpleMigrationComputeMinorVersions() {
 		JsonObject source = readSource("module/simple-input.json");
-		assertThat(this.updater.migrate(source)).isTrue();
+		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("minorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("minorGenerations");
 		assertThat(generations).hasSize(3);
@@ -75,7 +75,7 @@ public class ModuleIndexerTests {
 	@Test
 	public void releaseTrainMigrationComputeTotalDownloads() {
 		JsonObject source = readSource("module/release-train-input.json");
-		assertThat(this.updater.migrate(source)).isTrue();
+		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("totalCount")).isTrue();
 		assertThat(source.getAsJsonPrimitive("totalCount").getAsLong()).isEqualTo(1400);
 	}
@@ -83,7 +83,7 @@ public class ModuleIndexerTests {
 	@Test
 	public void releaseTrainMigrationDoesNotComputeMajorGenerations() {
 		JsonObject source = readSource("module/release-train-input.json");
-		assertThat(this.updater.migrate(source)).isTrue();
+		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("majorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("majorGenerations");
 		assertThat(generations).hasSize(1);
@@ -93,7 +93,7 @@ public class ModuleIndexerTests {
 	@Test
 	public void releaseTrainMigrationComputeMinorVersions() {
 		JsonObject source = readSource("module/release-train-input.json");
-		assertThat(this.updater.migrate(source)).isTrue();
+		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("minorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("minorGenerations");
 		assertThat(generations).hasSize(5);
@@ -107,7 +107,7 @@ public class ModuleIndexerTests {
 	@Test
 	public void nonStandardMigrationComputeTotalDownloads() {
 		JsonObject source = readSource("module/non-standard-input.json");
-		assertThat(this.updater.migrate(source)).isTrue();
+		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("totalCount")).isTrue();
 		assertThat(source.getAsJsonPrimitive("totalCount").getAsLong()).isEqualTo(100);
 	}
@@ -115,7 +115,7 @@ public class ModuleIndexerTests {
 	@Test
 	public void nonStandardMigrationComputeMajorVersions() {
 		JsonObject source = readSource("module/non-standard-input.json");
-		assertThat(this.updater.migrate(source)).isTrue();
+		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("majorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("majorGenerations");
 		assertThat(generations).hasSize(2);
@@ -126,7 +126,7 @@ public class ModuleIndexerTests {
 	@Test
 	public void nonStandardMigrationComputeMinorVersions() {
 		JsonObject source = readSource("module/non-standard-input.json");
-		assertThat(this.updater.migrate(source)).isTrue();
+		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("minorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("minorGenerations");
 		assertThat(generations).hasSize(3);
@@ -138,21 +138,21 @@ public class ModuleIndexerTests {
 	@Test
 	public void simpleIndexReturnUpdateDocument() {
 		JsonObject source = read("module/simple-input.json");
-		Update update = this.updater.index(source);
+		Update update = this.indexer.index(source);
 		assertThat(update).isNotNull();
 	}
 
 	@Test
 	public void simpleIndexMissingTotalCountReturnUpdateDocument() {
 		JsonObject source = read("module/simple-migrated-missing-total-count.json");
-		Update update = this.updater.index(source);
+		Update update = this.indexer.index(source);
 		assertThat(update).isNotNull();
 	}
 
 	@Test
 	public void simpleIndexAlreadyMigratedReturnNull() {
 		JsonObject source = read("module/simple-migrated.json");
-		assertThat(this.updater.index(source)).isNull();
+		assertThat(this.indexer.index(source)).isNull();
 	}
 
 	private void assertGeneration(JsonElement item, String name, long count) {
