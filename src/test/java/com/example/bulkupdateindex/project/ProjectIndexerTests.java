@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.searchbox.core.Update;
 import org.junit.Test;
 
 import org.springframework.core.io.ClassPathResource;
@@ -63,6 +64,34 @@ public class ProjectIndexerTests {
 		assertThat(this.indexer.migrate(source)).isTrue();
 		assertThat(source.has("dependenciesCount")).isTrue();
 		assertThat(source.get("dependenciesCount").getAsInt()).isEqualTo(2);
+	}
+
+	@Test
+	public void indexMissingVersionReturnUpdateDocument() {
+		JsonObject source = read("project/simple-migrated-missing-version.json");
+		Update update = this.indexer.index(source);
+		assertThat(update).isNotNull();
+	}
+
+	@Test
+	public void indexMissingDependenciesIdReturnUpdateDocument() {
+		JsonObject source = read("project/simple-migrated-missing-dependencies-id.json");
+		Update update = this.indexer.index(source);
+		assertThat(update).isNotNull();
+	}
+
+	@Test
+	public void indexMissingDependenciesCountReturnUpdateDocument() {
+		JsonObject source = read(
+				"project/simple-migrated-missing-dependencies-count.json");
+		Update update = this.indexer.index(source);
+		assertThat(update).isNotNull();
+	}
+
+	@Test
+	public void indexWithUpToDateDocumentReturnsNull() {
+		JsonObject source = read("project/simple-migrated.json");
+		assertThat(this.indexer.index(source)).isNull();
 	}
 
 	private JsonObject readSource(String location) {
