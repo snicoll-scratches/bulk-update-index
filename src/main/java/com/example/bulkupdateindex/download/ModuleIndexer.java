@@ -25,6 +25,7 @@ import com.example.bulkupdateindex.IndexActionContainer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +33,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Index the {@code download} document to add more information about versions.
+ * Index the {@code download} document to add more information about versions. Assumes
+ * that the major and minor indexes are empty or do not contain any information about the
+ * {@code download} document to index.
  *
  * @author Stephane Nicoll
  */
 @Component
 public class ModuleIndexer extends AbstractIndexer {
+
+	static final String PROJECTS_MAJOR_INDEX = "projects-major";
+
+	static final String PROJECTS_MINOR_INDEX = "projects-minor";
 
 	private static final Logger logger = LoggerFactory.getLogger(ModuleIndexer.class);
 
@@ -50,21 +57,13 @@ public class ModuleIndexer extends AbstractIndexer {
 
 	protected void migrate(IndexActionContainer container) {
 		JsonObject source = container.getSource();
-		if (source.has("totalCount")
-				&& (source.has("majorGenerations") && (source.has("minorGenerations")))) {
-			return;
-		}
 		DownloadCountAggregation aggregation = computeAggregation(source);
-		source.addProperty("totalCount", aggregation.getTotalCount());
-		if (!aggregation.getMajorGenerations().isEmpty()) {
-			source.add("majorGenerations",
-					toJsonArray(aggregation.getMajorGenerations()));
+		if (!source.has("totalCount")) {
+			source.addProperty("totalCount", aggregation.getTotalCount());
+			container.addUpdateAction(source);
 		}
-		if (!aggregation.getMinorGenerations().isEmpty()) {
-			source.add("minorGenerations",
-					toJsonArray(aggregation.getMinorGenerations()));
-		}
-		container.addUpdateAction(source);
+		indexVersions(container, PROJECTS_MAJOR_INDEX, aggregation.getMajorGenerations());
+		indexVersions(container, PROJECTS_MINOR_INDEX, aggregation.getMinorGenerations());
 	}
 
 	private DownloadCountAggregation computeAggregation(JsonObject source) {
@@ -76,15 +75,27 @@ public class ModuleIndexer extends AbstractIndexer {
 		return aggregation;
 	}
 
-	private JsonArray toJsonArray(Map<String, Long> content) {
-		JsonArray elements = new JsonArray();
-		content.keySet().stream().sorted().forEach((name) -> {
-			JsonObject element = new JsonObject();
-			element.addProperty("name", name);
-			element.addProperty("count", content.get(name));
-			elements.add(element);
+	private void indexVersions(IndexActionContainer container, String indexName,
+			Map<String, Long> versions) {
+		versions.forEach((version, count) -> {
+			JsonObject versionSource = createVersionSource(container.getSource(), version,
+					count);
+			container.addAction(new Index.Builder(versionSource).index(indexName)
+					.type("download").build());
 		});
-		return elements;
+	}
+
+	private JsonObject createVersionSource(JsonObject source, String version,
+			long count) {
+		JsonObject object = new JsonObject();
+		object.addProperty("from", source.get("from").getAsLong());
+		object.addProperty("to", source.get("to").getAsLong());
+		object.addProperty("projectId", source.get("projectId").getAsString());
+		object.addProperty("groupId", source.get("groupId").getAsString());
+		object.addProperty("artifactId", source.get("artifactId").getAsString());
+		object.addProperty("version", version);
+		object.addProperty("count", count);
+		return object;
 	}
 
 }

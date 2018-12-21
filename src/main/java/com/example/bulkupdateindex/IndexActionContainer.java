@@ -59,6 +59,10 @@ public class IndexActionContainer {
 				.type(this.type).build());
 	}
 
+	public void addAction(BulkableAction<?> action) {
+		this.actions.add(action);
+	}
+
 	public JsonObject getDocument() {
 		return this.document;
 	}

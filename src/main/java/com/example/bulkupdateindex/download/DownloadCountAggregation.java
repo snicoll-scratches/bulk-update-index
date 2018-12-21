@@ -17,8 +17,8 @@
 package com.example.bulkupdateindex.download;
 
 import java.net.URLDecoder;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,9 +40,9 @@ class DownloadCountAggregation {
 
 	private long totalCount;
 
-	private final Map<String, Long> majorGenerations = new HashMap<>();
+	private final Map<String, Long> majorGenerations = new TreeMap<>();
 
-	private final Map<String, Long> minorGenerations = new HashMap<>();
+	private final Map<String, Long> minorGenerations = new TreeMap<>();
 
 	public long getTotalCount() {
 		return this.totalCount;

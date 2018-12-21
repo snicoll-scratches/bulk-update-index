@@ -11,30 +11,6 @@
     "groupId": "org.springframework.plugin",
     "artifactId": "spring-plugin-metadata",
     "totalCount": 170,
-    "majorGenerations": [
-      {
-        "name": "0",
-        "count": 10
-      },
-      {
-        "name": "1",
-        "count": 160
-      }
-    ],
-    "minorGenerations": [
-      {
-        "name": "0.8",
-        "count": 10
-      },
-      {
-        "name": "1.0",
-        "count": 60
-      },
-      {
-        "name": "1.2",
-        "count": 100
-      }
-    ],
     "stats": [
       {
         "source": "central",
