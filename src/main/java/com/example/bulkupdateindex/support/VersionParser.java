@@ -49,7 +49,7 @@ public class VersionParser {
 			Collections.emptyList());
 
 	private static final Pattern VERSION_REGEX = Pattern
-			.compile("^(\\d+)\\.(\\d+|x)\\.(\\d+|x)(?:\\.([^0-9]+)(\\d+)?)?$");
+			.compile("^(\\d+)\\.(\\d+|x)\\.(\\d+|x)(?:[.|-]([^0-9]+)(\\d+)?)?$");
 
 	private final List<Version> latestVersions;
 
