@@ -17,7 +17,6 @@
 package com.example.bulkupdateindex.download;
 
 import java.io.IOException;
-import java.util.Map;
 
 import com.example.bulkupdateindex.AbstractIndexer;
 import com.example.bulkupdateindex.BulkUpdateIndex;
@@ -33,18 +32,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Index the {@code download} document to add more information about versions. Assumes
- * that the major and minor indexes are empty or do not contain any information about the
- * {@code download} document to index.
+ * Index {@code download} documents to a new index with a flat structure.
  *
  * @author Stephane Nicoll
  */
 @Component
 public class ModuleIndexer extends AbstractIndexer {
-
-	static final String PROJECTS_MAJOR_INDEX = "projects-major";
-
-	static final String PROJECTS_MINOR_INDEX = "projects-minor";
 
 	private static final Logger logger = LoggerFactory.getLogger(ModuleIndexer.class);
 
@@ -56,46 +49,16 @@ public class ModuleIndexer extends AbstractIndexer {
 	}
 
 	protected void migrate(IndexActionContainer container) {
+		StatHandler statHandler = new StatHandler();
 		JsonObject source = container.getSource();
-		DownloadCountAggregation aggregation = computeAggregation(source);
-		if (!source.has("totalCount")) {
-			source.addProperty("totalCount", aggregation.getTotalCount());
-			container.addUpdateAction(source);
-		}
-		indexVersions(container, PROJECTS_MAJOR_INDEX, aggregation.getMajorGenerations());
-		indexVersions(container, PROJECTS_MINOR_INDEX, aggregation.getMinorGenerations());
-	}
-
-	private DownloadCountAggregation computeAggregation(JsonObject source) {
 		JsonArray stats = source.getAsJsonArray("stats");
-		DownloadCountAggregation aggregation = new DownloadCountAggregation();
+
 		for (JsonElement stat : stats) {
-			aggregation.handle(source, stat.getAsJsonObject());
-		}
-		return aggregation;
-	}
-
-	private void indexVersions(IndexActionContainer container, String indexName,
-			Map<String, Long> versions) {
-		versions.forEach((version, count) -> {
-			JsonObject versionSource = createVersionSource(container.getSource(), version,
-					count);
-			container.addAction(new Index.Builder(versionSource).index(indexName)
+			JsonObject downloadDocument = statHandler.handle(source,
+					stat.getAsJsonObject());
+			container.addAction(new Index.Builder(downloadDocument).index("downloads")
 					.type("download").build());
-		});
-	}
-
-	private JsonObject createVersionSource(JsonObject source, String version,
-			long count) {
-		JsonObject object = new JsonObject();
-		object.addProperty("from", source.get("from").getAsLong());
-		object.addProperty("to", source.get("to").getAsLong());
-		object.addProperty("projectId", source.get("projectId").getAsString());
-		object.addProperty("groupId", source.get("groupId").getAsString());
-		object.addProperty("artifactId", source.get("artifactId").getAsString());
-		object.addProperty("version", version);
-		object.addProperty("count", count);
-		return object;
+		}
 	}
 
 }

@@ -45,109 +45,54 @@ public class ModuleIndexerTests {
 	private final ModuleIndexer indexer = new ModuleIndexer();
 
 	@Test
-	public void simpleMigrationComputeTotalDownloads() {
+	public void simpleMigration() {
 		IndexActionContainer container = migrate("module/simple-input.json");
-		assertThat(container.getActions()).hasSize(6); // 2 major + 3 minor
-		JsonObject source = getUpdatedSource(container.getActions().get(0));
-		assertThat(source.has("totalCount")).isTrue();
-		assertThat(source.getAsJsonPrimitive("totalCount").getAsLong()).isEqualTo(170);
+		assertDownload(container, 0, "0.8.0.RELEASE", "0", "0.8", 10);
+		assertDownload(container, 1, "1.0.0.RELEASE", "1", "1.0", 20);
+		assertDownload(container, 2, "1.0.1.RELEASE", "1", "1.0", 40);
+		assertDownload(container, 3, "1.2.0.RELEASE", "1", "1.2", 100);
+		assertThat(container.getActions()).hasSize(4);
 	}
 
 	@Test
-	public void simpleMigrationComputeMajorVersions() {
-		IndexActionContainer container = migrate("module/simple-input.json");
-		assertGeneration(container.getSource(), container.getActions().get(1),
-				ModuleIndexer.PROJECTS_MAJOR_INDEX, "0", 10);
-		assertGeneration(container.getSource(), container.getActions().get(2),
-				ModuleIndexer.PROJECTS_MAJOR_INDEX, "1", 160);
-	}
-
-	@Test
-	public void simpleMigrationComputeMinorVersions() {
-		IndexActionContainer container = migrate("module/simple-input.json");
-		assertGeneration(container.getSource(), container.getActions().get(3),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "0.8", 10);
-		assertGeneration(container.getSource(), container.getActions().get(4),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "1.0", 60);
-		assertGeneration(container.getSource(), container.getActions().get(5),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "1.2", 100);
-	}
-
-	@Test
-	public void releaseTrainMigrationComputeTotalDownloads() {
+	public void releaseTrainMigration() {
 		IndexActionContainer container = migrate("module/release-train-input.json");
-		assertThat(container.getActions()).hasSize(7); // 1 major + 5 minor
-		JsonObject source = getUpdatedSource(container.getActions().get(0));
-		assertThat(source.has("totalCount")).isTrue();
-		assertThat(source.getAsJsonPrimitive("totalCount").getAsLong()).isEqualTo(1400);
+		assertDownload(container, 0, "Codd-SR2", null, "Codd", 50);
+		assertDownload(container, 1, "Dijkstra-RELEASE", null, "Dijkstra", 200);
+		assertDownload(container, 2, "Dijkstra-SR1", null, "Dijkstra", 100);
+		assertDownload(container, 3, "Dijkstra-SR3", null, "Dijkstra", 200);
+		assertDownload(container, 4, "Gosling-SR1", null, "Gosling", 100);
+		assertDownload(container, 5, "Gosling-SR2A", null, "Gosling", 400);
+		assertDownload(container, 6, "Gosling-SR4", null, "Gosling", 150);
+		assertDownload(container, 7, "1.3.0.RELEASE", "1", "1.3", 50);
+		assertDownload(container, 8, "1.4.6.RELEASE", "1", "1.4", 150);
+		assertThat(container.getActions()).hasSize(9);
 	}
 
 	@Test
-	public void releaseTrainMigrationDoesNotComputeMajorGenerations() {
-		IndexActionContainer container = migrate("module/release-train-input.json");
-		assertGeneration(container.getSource(), container.getActions().get(1),
-				ModuleIndexer.PROJECTS_MAJOR_INDEX, "1", 200);
-	}
-
-	@Test
-	public void releaseTrainMigrationComputeMinorVersions() {
-		IndexActionContainer container = migrate("module/release-train-input.json");
-		assertGeneration(container.getSource(), container.getActions().get(2),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "1.3", 50);
-		assertGeneration(container.getSource(), container.getActions().get(3),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "1.4", 150);
-		assertGeneration(container.getSource(), container.getActions().get(4),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "Codd", 50);
-		assertGeneration(container.getSource(), container.getActions().get(5),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "Dijkstra", 500);
-		assertGeneration(container.getSource(), container.getActions().get(6),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "Gosling", 650);
-	}
-
-	@Test
-	public void nonStandardMigrationComputeTotalDownloads() {
+	public void nonStandardMigration() {
 		IndexActionContainer container = migrate("module/non-standard-input.json");
-		assertThat(container.getActions()).hasSize(6); // 2 major + 3 minor
-		JsonObject source = getUpdatedSource(container.getActions().get(0));
-		assertThat(source.has("totalCount")).isTrue();
-		assertThat(source.getAsJsonPrimitive("totalCount").getAsLong()).isEqualTo(100);
+		assertDownload(container, 0, "4.1.6.RELEASE", "4", "4.1", 20);
+		assertDownload(container, 1, "4.1.0.RELEASE", "4", "4.1", 10);
+		assertDownload(container, 2, "2.5.6", "2", "2.5", 5);
+		assertDownload(container, 3, "2.0-m1", "2", "2.0", 50);
+		assertDownload(container, 4, "${spring.version}", null, null, 5);
+		assertDownload(container, 5, "", null, null, 5);
+		assertDownload(container, 6, "3..0.RELEASE", null, null, 5);
+		assertThat(container.getActions()).hasSize(7);
 	}
 
 	@Test
-	public void nonStandardMigrationComputeMajorVersions() {
-		IndexActionContainer container = migrate("module/non-standard-input.json");
-		assertGeneration(container.getSource(), container.getActions().get(1),
-				ModuleIndexer.PROJECTS_MAJOR_INDEX, "2", 55);
-		assertGeneration(container.getSource(), container.getActions().get(2),
-				ModuleIndexer.PROJECTS_MAJOR_INDEX, "4", 30);
-	}
-
-	@Test
-	public void nonStandardMigrationComputeMinorVersions() {
-		IndexActionContainer container = migrate("module/non-standard-input.json");
-		assertGeneration(container.getSource(), container.getActions().get(3),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "2.0", 50);
-		assertGeneration(container.getSource(), container.getActions().get(4),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "2.5", 5);
-		assertGeneration(container.getSource(), container.getActions().get(5),
-				ModuleIndexer.PROJECTS_MINOR_INDEX, "4.1", 30);
-	}
-
-	@Test
-	public void simpleIndexReturnUpdateDocument() {
+	public void simpleIndexReturnActions() {
 		JsonObject source = read("module/simple-input.json");
-		assertThat(this.indexer.index(source)).hasSize(6);
+		assertThat(this.indexer.index(source)).hasSize(4);
 	}
 
-	@Test
-	public void simpleIndexAlreadyMigratedOnlyContainsGenerationsIndex() {
-		JsonObject source = read("module/simple-migrated.json");
-		assertThat(this.indexer.index(source)).hasSize(5);
-	}
-
-	private void assertGeneration(JsonObject source, BulkableAction action,
-			String indexName, String version, long count) {
-		JsonObject json = assertIndexAction(action, indexName);
+	private void assertDownload(IndexActionContainer container, int index, String version,
+			String major, String minor, long count) {
+		JsonObject source = container.getSource();
+		BulkableAction<?> action = container.getActions().get(index);
+		JsonObject json = assertIndexAction(action);
 		assertThat(source.get("from").getAsLong())
 				.isEqualTo(json.get("from").getAsLong());
 		assertThat(source.get("to").getAsLong()).isEqualTo(json.get("to").getAsLong());
@@ -157,23 +102,30 @@ public class ModuleIndexerTests {
 				.isEqualTo(json.get("groupId").getAsString());
 		assertThat(source.get("artifactId").getAsString())
 				.isEqualTo(json.get("artifactId").getAsString());
-		assertThat(json.get("version").getAsString()).isEqualTo(version);
 		assertThat(json.getAsJsonPrimitive("count").getAsLong()).isEqualTo(count);
-		assertThat(json.size()).isEqualTo(7);
+		assertThat(json.has("version")).isTrue();
+		JsonObject versionRef = json.getAsJsonObject("version");
+		assertThat(versionRef.get("id").getAsString()).isEqualTo(version);
+		if (major != null) {
+			assertThat(versionRef.get("major").getAsString()).isEqualTo(major);
+		}
+		else {
+			assertThat(versionRef.has("major")).isFalse();
+		}
+		if (minor != null) {
+			assertThat(versionRef.get("minor").getAsString()).isEqualTo(minor);
+		}
+		else {
+			assertThat(versionRef.has("minor")).isFalse();
+		}
 	}
 
-	private JsonObject assertIndexAction(BulkableAction<?> action, String indexName) {
+	private JsonObject assertIndexAction(BulkableAction<?> action) {
 		assertThat(action).isInstanceOf(Index.class);
-		assertThat(action.getIndex()).isEqualTo(indexName);
+		assertThat(action.getIndex()).isEqualTo("downloads");
 		assertThat(action.getRestMethodName()).isEqualTo("POST");
 		assertThat(action.getType()).isEqualTo("download");
 		return (JsonObject) new DirectFieldAccessor(action).getPropertyValue("payload");
-	}
-
-	private JsonObject getUpdatedSource(BulkableAction<?> action) {
-		JsonObject document = (JsonObject) new DirectFieldAccessor(action)
-				.getPropertyValue("payload");
-		return document.getAsJsonObject("doc");
 	}
 
 	private IndexActionContainer migrate(String location) {
