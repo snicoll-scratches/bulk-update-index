@@ -39,7 +39,7 @@ public class BulkUpdateIndexRunnerConfiguration {
 	@Bean
 	public ApplicationRunner runMigration(ModuleIndexer indexer) {
 		return (arguments) -> {
-			indexer.indexModules(this.bulkUpdateIndex);
+			// indexer.indexModules(this.bulkUpdateIndex);
 		};
 	}
 
