@@ -64,7 +64,7 @@ public class VersionReferenceTests {
 
 	@Test
 	public void parseVersionProperty() {
-		assertThat(VersionReference.parse("${spring.version}")).isNull();
+		testParser("${spring.version}", null, null);
 	}
 
 	private void testParser(String text, String major, String minor) {

@@ -75,7 +75,7 @@ public final class VersionReference {
 		if (nonStandardVersion != null) {
 			return fromVersion(versionText, nonStandardVersion);
 		}
-		return null;
+		return of(versionText, null, null);
 	}
 
 	private static VersionReference fromVersion(String id, Version version) {
