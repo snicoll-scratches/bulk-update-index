@@ -24,6 +24,7 @@ import java.util.function.Function;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.searchbox.action.BulkableAction;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.core.Bulk;
@@ -63,7 +64,8 @@ public class BulkUpdateIndex {
 	 * @throws IOException if an index operation fails
 	 */
 	public void update(Search.Builder searchBuilder, int pageSize,
-			Function<JsonObject, Update> updateFunction) throws IOException {
+			Function<JsonObject, List<BulkableAction<?>>> updateFunction)
+			throws IOException {
 		Search search = searchBuilder.addSort(new Sort("_doc"))
 				.setParameter(Parameters.SIZE, pageSize)
 				.setParameter(Parameters.SCROLL, "5m").build();
@@ -85,18 +87,19 @@ public class BulkUpdateIndex {
 	}
 
 	private boolean processPage(JestResult result,
-			Function<JsonObject, Update> updateFunction) throws IOException {
+			Function<JsonObject, List<BulkableAction<?>>> updateFunction)
+			throws IOException {
 		JsonArray hits = result.getJsonObject().getAsJsonObject("hits")
 				.getAsJsonArray("hits");
 		if (hits.size() == 0) {
 			logger.info("No more elements");
 			return false;
 		}
-		List<Update> updates = new ArrayList<>();
+		List<BulkableAction<?>> updates = new ArrayList<>();
 		for (JsonElement hit : hits) {
-			Update action = updateFunction.apply(hit.getAsJsonObject());
-			if (action != null) {
-				updates.add(action);
+			List<BulkableAction<?>> actions = updateFunction.apply(hit.getAsJsonObject());
+			if (actions != null) {
+				updates.addAll(actions);
 			}
 		}
 		if (!updates.isEmpty()) {

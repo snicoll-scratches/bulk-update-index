@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.example.bulkupdateindex.AbstractIndexer;
 import com.example.bulkupdateindex.BulkUpdateIndex;
+import com.example.bulkupdateindex.IndexActionContainer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -47,10 +48,11 @@ public class ModuleIndexer extends AbstractIndexer {
 		bulkUpdateIndex.update(searchBuilder, 2000, this::index);
 	}
 
-	protected boolean migrate(JsonObject source) {
+	protected void migrate(IndexActionContainer container) {
+		JsonObject source = container.getSource();
 		if (source.has("totalCount")
 				&& (source.has("majorGenerations") && (source.has("minorGenerations")))) {
-			return false;
+			return;
 		}
 		DownloadCountAggregation aggregation = computeAggregation(source);
 		source.addProperty("totalCount", aggregation.getTotalCount());
@@ -62,7 +64,7 @@ public class ModuleIndexer extends AbstractIndexer {
 			source.add("minorGenerations",
 					toJsonArray(aggregation.getMinorGenerations()));
 		}
-		return true;
+		container.addUpdateAction(source);
 	}
 
 	private DownloadCountAggregation computeAggregation(JsonObject source) {

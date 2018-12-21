@@ -16,7 +16,10 @@
 
 package com.example.bulkupdateindex;
 
+import java.util.List;
+
 import com.google.gson.JsonObject;
+import io.searchbox.action.BulkableAction;
 import io.searchbox.core.Update;
 
 /**
@@ -32,20 +35,12 @@ public abstract class AbstractIndexer {
 	 * @param input the input document to reindex
 	 * @return an {@link Update} or {@code null}
 	 */
-	public Update index(JsonObject input) {
-		String id = input.get("_id").getAsString();
-		String index = input.get("_index").getAsString();
-		String type = input.get("_type").getAsString();
-		JsonObject source = input.getAsJsonObject("_source");
-		boolean modified = migrate(source);
-		if (modified) {
-			JsonObject object = new JsonObject();
-			object.add("doc", source);
-			return new Update.Builder(object).index(index).id(id).type(type).build();
-		}
-		return null;
+	public List<BulkableAction<?>> index(JsonObject input) {
+		IndexActionContainer container = new IndexActionContainer(input);
+		migrate(container);
+		return container.getActions();
 	}
 
-	protected abstract boolean migrate(JsonObject source);
+	protected abstract void migrate(IndexActionContainer container);
 
 }

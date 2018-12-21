@@ -19,12 +19,15 @@ package com.example.bulkupdateindex.project;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import com.example.bulkupdateindex.IndexActionContainer;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import io.searchbox.core.Update;
+import io.searchbox.action.BulkableAction;
 import org.junit.Test;
 
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.StreamUtils;
 
@@ -37,12 +40,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ProjectIndexerTests {
 
+	private static final Gson GSON = new Gson();
+
 	private final ProjectIndexer indexer = new ProjectIndexer();
 
 	@Test
 	public void indexVersion() {
-		JsonObject source = readSource("project/simple-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("project/simple-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("version")).isTrue();
 		JsonObject version = source.get("version").getAsJsonObject();
 		assertThat(version.get("id").getAsString()).isEqualTo("2.1.1.RELEASE");
@@ -52,16 +58,18 @@ public class ProjectIndexerTests {
 
 	@Test
 	public void indexDependenciesId() {
-		JsonObject source = readSource("project/simple-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("project/simple-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("dependenciesId")).isTrue();
 		assertThat(source.get("dependenciesId").getAsString()).isEqualTo("security web");
 	}
 
 	@Test
 	public void indexDependenciesCount() {
-		JsonObject source = readSource("project/simple-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("project/simple-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("dependenciesCount")).isTrue();
 		assertThat(source.get("dependenciesCount").getAsInt()).isEqualTo(2);
 	}
@@ -69,40 +77,48 @@ public class ProjectIndexerTests {
 	@Test
 	public void indexMissingVersionReturnUpdateDocument() {
 		JsonObject source = read("project/simple-migrated-missing-version.json");
-		Update update = this.indexer.index(source);
-		assertThat(update).isNotNull();
+		List<BulkableAction<?>> actions = this.indexer.index(source);
+		assertThat(actions).hasSize(1);
 	}
 
 	@Test
 	public void indexMissingDependenciesIdReturnUpdateDocument() {
 		JsonObject source = read("project/simple-migrated-missing-dependencies-id.json");
-		Update update = this.indexer.index(source);
-		assertThat(update).isNotNull();
+		List<BulkableAction<?>> actions = this.indexer.index(source);
+		assertThat(actions).hasSize(1);
 	}
 
 	@Test
 	public void indexMissingDependenciesCountReturnUpdateDocument() {
 		JsonObject source = read(
 				"project/simple-migrated-missing-dependencies-count.json");
-		Update update = this.indexer.index(source);
-		assertThat(update).isNotNull();
+		List<BulkableAction<?>> actions = this.indexer.index(source);
+		assertThat(actions).hasSize(1);
 	}
 
 	@Test
 	public void indexWithUpToDateDocumentReturnsNull() {
 		JsonObject source = read("project/simple-migrated.json");
-		assertThat(this.indexer.index(source)).isNull();
+		assertThat(this.indexer.index(source)).isEmpty();
 	}
 
-	private JsonObject readSource(String location) {
-		return read(location).getAsJsonObject("_source");
+	private JsonObject getUpdatedSource(BulkableAction<?> action) {
+		JsonObject document = (JsonObject) new DirectFieldAccessor(action)
+				.getPropertyValue("payload");
+		return document.getAsJsonObject("doc");
+	}
+
+	private IndexActionContainer migrate(String location) {
+		IndexActionContainer container = new IndexActionContainer(read(location));
+		this.indexer.migrate(container);
+		return container;
 	}
 
 	private JsonObject read(String location) {
 		try {
 			try (InputStream in = new ClassPathResource(location).getInputStream()) {
 				String json = StreamUtils.copyToString(in, StandardCharsets.UTF_8);
-				return new Gson().fromJson(json, JsonObject.class);
+				return GSON.fromJson(json, JsonObject.class);
 			}
 		}
 		catch (IOException ex) {

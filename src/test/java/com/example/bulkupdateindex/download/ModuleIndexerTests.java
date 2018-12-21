@@ -19,14 +19,17 @@ package com.example.bulkupdateindex.download;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import com.example.bulkupdateindex.IndexActionContainer;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import io.searchbox.core.Update;
+import io.searchbox.action.BulkableAction;
 import org.junit.Test;
 
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.StreamUtils;
 
@@ -39,20 +42,24 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ModuleIndexerTests {
 
+	private static final Gson GSON = new Gson();
+
 	private final ModuleIndexer indexer = new ModuleIndexer();
 
 	@Test
 	public void simpleMigrationComputeTotalDownloads() {
-		JsonObject source = readSource("module/simple-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("module/simple-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("totalCount")).isTrue();
 		assertThat(source.getAsJsonPrimitive("totalCount").getAsLong()).isEqualTo(170);
 	}
 
 	@Test
 	public void simpleMigrationComputeMajorVersions() {
-		JsonObject source = readSource("module/simple-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("module/simple-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("majorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("majorGenerations");
 		assertThat(generations).hasSize(2);
@@ -62,8 +69,9 @@ public class ModuleIndexerTests {
 
 	@Test
 	public void simpleMigrationComputeMinorVersions() {
-		JsonObject source = readSource("module/simple-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("module/simple-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("minorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("minorGenerations");
 		assertThat(generations).hasSize(3);
@@ -74,16 +82,18 @@ public class ModuleIndexerTests {
 
 	@Test
 	public void releaseTrainMigrationComputeTotalDownloads() {
-		JsonObject source = readSource("module/release-train-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("module/release-train-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("totalCount")).isTrue();
 		assertThat(source.getAsJsonPrimitive("totalCount").getAsLong()).isEqualTo(1400);
 	}
 
 	@Test
 	public void releaseTrainMigrationDoesNotComputeMajorGenerations() {
-		JsonObject source = readSource("module/release-train-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("module/release-train-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("majorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("majorGenerations");
 		assertThat(generations).hasSize(1);
@@ -92,8 +102,9 @@ public class ModuleIndexerTests {
 
 	@Test
 	public void releaseTrainMigrationComputeMinorVersions() {
-		JsonObject source = readSource("module/release-train-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("module/release-train-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("minorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("minorGenerations");
 		assertThat(generations).hasSize(5);
@@ -106,16 +117,18 @@ public class ModuleIndexerTests {
 
 	@Test
 	public void nonStandardMigrationComputeTotalDownloads() {
-		JsonObject source = readSource("module/non-standard-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("module/non-standard-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("totalCount")).isTrue();
 		assertThat(source.getAsJsonPrimitive("totalCount").getAsLong()).isEqualTo(100);
 	}
 
 	@Test
 	public void nonStandardMigrationComputeMajorVersions() {
-		JsonObject source = readSource("module/non-standard-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("module/non-standard-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("majorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("majorGenerations");
 		assertThat(generations).hasSize(2);
@@ -125,8 +138,9 @@ public class ModuleIndexerTests {
 
 	@Test
 	public void nonStandardMigrationComputeMinorVersions() {
-		JsonObject source = readSource("module/non-standard-input.json");
-		assertThat(this.indexer.migrate(source)).isTrue();
+		IndexActionContainer container = migrate("module/non-standard-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = getUpdatedSource(container.getActions().get(0));
 		assertThat(source.has("minorGenerations")).isTrue();
 		JsonArray generations = source.getAsJsonArray("minorGenerations");
 		assertThat(generations).hasSize(3);
@@ -138,21 +152,21 @@ public class ModuleIndexerTests {
 	@Test
 	public void simpleIndexReturnUpdateDocument() {
 		JsonObject source = read("module/simple-input.json");
-		Update update = this.indexer.index(source);
-		assertThat(update).isNotNull();
+		List<BulkableAction<?>> actions = this.indexer.index(source);
+		assertThat(actions).hasSize(1);
 	}
 
 	@Test
 	public void simpleIndexMissingTotalCountReturnUpdateDocument() {
 		JsonObject source = read("module/simple-migrated-missing-total-count.json");
-		Update update = this.indexer.index(source);
-		assertThat(update).isNotNull();
+		List<BulkableAction<?>> actions = this.indexer.index(source);
+		assertThat(actions).hasSize(1);
 	}
 
 	@Test
 	public void simpleIndexAlreadyMigratedReturnNull() {
 		JsonObject source = read("module/simple-migrated.json");
-		assertThat(this.indexer.index(source)).isNull();
+		assertThat(this.indexer.index(source)).isEmpty();
 	}
 
 	private void assertGeneration(JsonElement item, String name, long count) {
@@ -161,15 +175,23 @@ public class ModuleIndexerTests {
 		assertThat(json.getAsJsonPrimitive("count").getAsLong()).isEqualTo(count);
 	}
 
-	private JsonObject readSource(String location) {
-		return read(location).getAsJsonObject("_source");
+	private JsonObject getUpdatedSource(BulkableAction<?> action) {
+		JsonObject document = (JsonObject) new DirectFieldAccessor(action)
+				.getPropertyValue("payload");
+		return document.getAsJsonObject("doc");
+	}
+
+	private IndexActionContainer migrate(String location) {
+		IndexActionContainer container = new IndexActionContainer(read(location));
+		this.indexer.migrate(container);
+		return container;
 	}
 
 	private JsonObject read(String location) {
 		try {
 			try (InputStream in = new ClassPathResource(location).getInputStream()) {
 				String json = StreamUtils.copyToString(in, StandardCharsets.UTF_8);
-				return new Gson().fromJson(json, JsonObject.class);
+				return GSON.fromJson(json, JsonObject.class);
 			}
 		}
 		catch (IOException ex) {

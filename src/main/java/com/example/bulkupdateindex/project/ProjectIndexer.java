@@ -23,6 +23,7 @@ import java.util.List;
 
 import com.example.bulkupdateindex.AbstractIndexer;
 import com.example.bulkupdateindex.BulkUpdateIndex;
+import com.example.bulkupdateindex.IndexActionContainer;
 import com.example.bulkupdateindex.support.Version;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -52,14 +53,15 @@ public class ProjectIndexer extends AbstractIndexer {
 		bulkUpdateIndex.update(searchBuilder, 2000, this::index);
 	}
 
-	protected boolean migrate(JsonObject source) {
+	protected void migrate(IndexActionContainer container) {
+		JsonObject source = container.getSource();
 		if (source.has("version") && source.has("dependenciesId")
 				&& source.has("dependenciesCount")) {
-			return false;
+			return;
 		}
 		indexVersion(source);
 		indexDependencies(source);
-		return true;
+		container.addUpdateAction(source);
 	}
 
 	private void indexVersion(JsonObject source) {
