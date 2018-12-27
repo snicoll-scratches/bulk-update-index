@@ -119,8 +119,14 @@ public class ProjectIndexer extends AbstractIndexer {
 
 	private void indexClient(JsonObject source, JsonObject target) {
 		JsonObject clientObject = new JsonObject();
-		clientObject.addProperty("id", source.get("clientId").getAsString());
-		clientObject.addProperty("version", source.get("clientVersion").getAsString());
+		String clientId = getText(source, "clientId");
+		if (clientId != null) {
+			clientObject.addProperty("id", clientId);
+		}
+		String clientVersion = getText(source, "clientVersion");
+		if (clientVersion != null) {
+			clientObject.addProperty("version", clientVersion);
+		}
 		clientObject.addProperty("ip", source.get("requestIpv4").getAsString());
 		clientObject.addProperty("country", source.get("requestCountry").getAsString());
 		target.add("client", clientObject);
@@ -150,7 +156,7 @@ public class ProjectIndexer extends AbstractIndexer {
 			errorState.add("dependencies", invalidDependencies);
 		}
 		String message = getText(source, "errorMessage");
-		if (!message.isEmpty()) {
+		if (message != null) {
 			errorState.addProperty("message", message);
 		}
 		target.add("errorState", errorState);
@@ -163,7 +169,7 @@ public class ProjectIndexer extends AbstractIndexer {
 
 	private String getText(JsonObject source, String propertyName) {
 		JsonElement element = source.get(propertyName);
-		return (element != null) ? element.getAsString() : "";
+		return (element != null) ? element.getAsString() : null;
 	}
 
 	private Version determineSpringBootVersion(JsonObject source) {
