@@ -79,7 +79,7 @@ public class ProjectIndexer extends AbstractIndexer {
 		object.addProperty("javaVersion", source.get("javaVersion").getAsString());
 		object.addProperty("language", source.get("language").getAsString());
 		object.addProperty("packaging", source.get("packaging").getAsString());
-		String packageName = getText(source, "packageName");
+		String packageName = safeGetString(source, "packageName");
 		if (packageName != null) {
 			object.addProperty("packageName", packageName);
 		}
@@ -124,19 +124,19 @@ public class ProjectIndexer extends AbstractIndexer {
 
 	private void indexClient(JsonObject source, JsonObject target) {
 		JsonObject clientObject = new JsonObject();
-		String clientId = getText(source, "clientId");
+		String clientId = safeGetString(source, "clientId");
 		if (clientId != null) {
 			clientObject.addProperty("id", clientId);
 		}
-		String clientVersion = getText(source, "clientVersion");
+		String clientVersion = safeGetString(source, "clientVersion");
 		if (clientVersion != null) {
 			clientObject.addProperty("version", clientVersion);
 		}
-		String requestIp = getText(source, "requestIpv4");
+		String requestIp = safeGetString(source, "requestIpv4");
 		if (requestIp != null) {
 			clientObject.addProperty("ip", requestIp);
 		}
-		String requestCountry = getText(source, "requestCountry");
+		String requestCountry = safeGetString(source, "requestCountry");
 		if (requestCountry != null) {
 			clientObject.addProperty("country", requestCountry);
 		}
@@ -150,35 +150,35 @@ public class ProjectIndexer extends AbstractIndexer {
 		}
 		JsonObject errorState = new JsonObject();
 		errorState.addProperty("invalid", true);
-		if (getBoolean(source, "invalidJavaVersion")) {
+		if (safeGetBoolean(source, "invalidJavaVersion")) {
 			errorState.addProperty("javaVersion", true);
 		}
-		if (getBoolean(source, "invalidLanguage")) {
+		if (safeGetBoolean(source, "invalidLanguage")) {
 			errorState.addProperty("language", true);
 		}
-		if (getBoolean(source, "invalidPackaging")) {
+		if (safeGetBoolean(source, "invalidPackaging")) {
 			errorState.addProperty("packaging", true);
 		}
-		if (getBoolean(source, "invalidType")) {
+		if (safeGetBoolean(source, "invalidType")) {
 			errorState.addProperty("type", true);
 		}
 		JsonArray invalidDependencies = source.getAsJsonArray("invalidDependencies");
 		if (invalidDependencies != null && invalidDependencies.size() > 0) {
 			errorState.add("dependencies", invalidDependencies);
 		}
-		String message = getText(source, "errorMessage");
+		String message = safeGetString(source, "errorMessage");
 		if (message != null) {
 			errorState.addProperty("message", message);
 		}
 		target.add("errorState", errorState);
 	}
 
-	private boolean getBoolean(JsonObject source, String propertyName) {
+	private boolean safeGetBoolean(JsonObject source, String propertyName) {
 		JsonElement element = source.get(propertyName);
 		return element != null && element.getAsBoolean();
 	}
 
-	private String getText(JsonObject source, String propertyName) {
+	private String safeGetString(JsonObject source, String propertyName) {
 		JsonElement element = source.get(propertyName);
 		return (element != null) ? element.getAsString() : null;
 	}
