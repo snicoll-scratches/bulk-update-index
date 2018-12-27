@@ -33,6 +33,7 @@ import io.searchbox.core.Search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -42,6 +43,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Stephane Nicoll
  */
+@Component
 public class ProjectIndexer extends AbstractIndexer {
 
 	private static final Logger logger = LoggerFactory.getLogger(ProjectIndexer.class);
