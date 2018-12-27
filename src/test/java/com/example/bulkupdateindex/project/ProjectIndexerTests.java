@@ -81,6 +81,19 @@ public class ProjectIndexerTests {
 	}
 
 	@Test
+	public void indexClient() {
+		IndexActionContainer container = migrate("project/simple-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("client")).isTrue();
+		JsonObject client = source.get("client").getAsJsonObject();
+		assertThat(client.get("id").getAsString()).isEqualTo("my-ide");
+		assertThat(client.get("version").getAsString()).isEqualTo("1.2.3");
+		assertThat(client.get("ip").getAsString()).isEqualTo("127.0.0.1");
+		assertThat(client.get("country").getAsString()).isEqualTo("ID");
+	}
+
+	@Test
 	public void indexReturnAction() {
 		JsonObject source = read("project/simple-input.json");
 		List<BulkableAction<?>> actions = this.indexer.index(source);

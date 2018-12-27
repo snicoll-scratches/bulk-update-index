@@ -60,6 +60,7 @@ public class ProjectIndexer extends AbstractIndexer {
 		indexVersion(source, target);
 		indexDependencies(source, target);
 		indexBuildSystem(source, target);
+		indexClient(source, target);
 		container.addAction(new Index.Builder(target)
 				.index(container.getDocument().get("_index").getAsString() + "-new")
 				.type("request").build());
@@ -114,6 +115,15 @@ public class ProjectIndexer extends AbstractIndexer {
 		if (elements.length == 2) {
 			target.addProperty("buildSystem", elements[0]);
 		}
+	}
+
+	private void indexClient(JsonObject source, JsonObject target) {
+		JsonObject clientObject = new JsonObject();
+		clientObject.addProperty("id", source.get("clientId").getAsString());
+		clientObject.addProperty("version", source.get("clientVersion").getAsString());
+		clientObject.addProperty("ip", source.get("requestIpv4").getAsString());
+		clientObject.addProperty("country", source.get("requestCountry").getAsString());
+		target.add("client", clientObject);
 	}
 
 	private Version determineSpringBootVersion(JsonObject source) {
