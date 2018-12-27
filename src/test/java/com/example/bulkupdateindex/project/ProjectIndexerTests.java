@@ -24,7 +24,9 @@ import java.util.List;
 import com.example.bulkupdateindex.IndexActionContainer;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import io.searchbox.action.BulkableAction;
+import io.searchbox.core.Index;
 import org.junit.Test;
 
 import org.springframework.beans.DirectFieldAccessor;
@@ -48,7 +50,7 @@ public class ProjectIndexerTests {
 	public void indexVersion() {
 		IndexActionContainer container = migrate("project/simple-input.json");
 		assertThat(container.getActions()).hasSize(1);
-		JsonObject source = getUpdatedSource(container.getActions().get(0));
+		JsonObject source = assertIndexAction(container.getActions().get(0));
 		assertThat(source.has("version")).isTrue();
 		JsonObject version = source.get("version").getAsJsonObject();
 		assertThat(version.get("id").getAsString()).isEqualTo("2.1.1.RELEASE");
@@ -57,55 +59,31 @@ public class ProjectIndexerTests {
 	}
 
 	@Test
-	public void indexDependenciesId() {
+	public void indexDependencies() {
 		IndexActionContainer container = migrate("project/simple-input.json");
 		assertThat(container.getActions()).hasSize(1);
-		JsonObject source = getUpdatedSource(container.getActions().get(0));
-		assertThat(source.has("dependenciesId")).isTrue();
-		assertThat(source.get("dependenciesId").getAsString()).isEqualTo("security web");
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("dependencies")).isTrue();
+		JsonObject dependencies = source.get("dependencies").getAsJsonObject();
+		assertThat(dependencies.getAsJsonArray("values"))
+				.containsExactly(new JsonPrimitive("web"), new JsonPrimitive("security"));
+		assertThat(dependencies.get("id").getAsString()).isEqualTo("security web");
+		assertThat(dependencies.get("count").getAsInt()).isEqualTo(2);
 	}
 
 	@Test
-	public void indexDependenciesCount() {
-		IndexActionContainer container = migrate("project/simple-input.json");
-		assertThat(container.getActions()).hasSize(1);
-		JsonObject source = getUpdatedSource(container.getActions().get(0));
-		assertThat(source.has("dependenciesCount")).isTrue();
-		assertThat(source.get("dependenciesCount").getAsInt()).isEqualTo(2);
-	}
-
-	@Test
-	public void indexMissingVersionReturnUpdateDocument() {
-		JsonObject source = read("project/simple-migrated-missing-version.json");
+	public void indexReturnAction() {
+		JsonObject source = read("project/simple-input.json");
 		List<BulkableAction<?>> actions = this.indexer.index(source);
 		assertThat(actions).hasSize(1);
 	}
 
-	@Test
-	public void indexMissingDependenciesIdReturnUpdateDocument() {
-		JsonObject source = read("project/simple-migrated-missing-dependencies-id.json");
-		List<BulkableAction<?>> actions = this.indexer.index(source);
-		assertThat(actions).hasSize(1);
-	}
-
-	@Test
-	public void indexMissingDependenciesCountReturnUpdateDocument() {
-		JsonObject source = read(
-				"project/simple-migrated-missing-dependencies-count.json");
-		List<BulkableAction<?>> actions = this.indexer.index(source);
-		assertThat(actions).hasSize(1);
-	}
-
-	@Test
-	public void indexWithUpToDateDocumentReturnsNull() {
-		JsonObject source = read("project/simple-migrated.json");
-		assertThat(this.indexer.index(source)).isEmpty();
-	}
-
-	private JsonObject getUpdatedSource(BulkableAction<?> action) {
-		JsonObject document = (JsonObject) new DirectFieldAccessor(action)
-				.getPropertyValue("payload");
-		return document.getAsJsonObject("doc");
+	private JsonObject assertIndexAction(BulkableAction<?> action) {
+		assertThat(action).isInstanceOf(Index.class);
+		assertThat(action.getIndex()).isEqualTo("initializr-2015-new");
+		assertThat(action.getRestMethodName()).isEqualTo("POST");
+		assertThat(action.getType()).isEqualTo("request");
+		return (JsonObject) new DirectFieldAccessor(action).getPropertyValue("payload");
 	}
 
 	private IndexActionContainer migrate(String location) {

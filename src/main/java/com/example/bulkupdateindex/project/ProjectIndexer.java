@@ -28,6 +28,7 @@ import com.example.bulkupdateindex.support.Version;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,16 +56,30 @@ public class ProjectIndexer extends AbstractIndexer {
 
 	protected void migrate(IndexActionContainer container) {
 		JsonObject source = container.getSource();
-		if (source.has("version") && source.has("dependenciesId")
-				&& source.has("dependenciesCount")) {
-			return;
-		}
-		indexVersion(source);
-		indexDependencies(source);
-		container.addUpdateAction(source);
+		JsonObject target = initializeDocument(source);
+		indexVersion(source, target);
+		indexDependencies(source, target);
+		container.addAction(new Index.Builder(target)
+				.index(container.getDocument().get("_index").getAsString() + "-new")
+				.type("request").build());
 	}
 
-	private void indexVersion(JsonObject source) {
+	private JsonObject initializeDocument(JsonObject source) {
+		JsonObject object = new JsonObject();
+		object.addProperty("generationTimestamp",
+				source.get("generationTimestamp").getAsLong());
+		object.addProperty("type", source.get("type").getAsString());
+		object.addProperty("groupId", source.get("groupId").getAsString());
+		object.addProperty("artifactId", source.get("artifactId").getAsString());
+		object.addProperty("javaVersion", source.get("javaVersion").getAsString());
+		object.addProperty("language", source.get("language").getAsString());
+		object.addProperty("packageName", source.get("packageName").getAsString());
+		object.addProperty("packaging", source.get("packaging").getAsString());
+
+		return object;
+	}
+
+	private void indexVersion(JsonObject source, JsonObject target) {
 		Version version = determineSpringBootVersion(source);
 		if (version != null) {
 			JsonObject versionObject = new JsonObject();
@@ -74,16 +89,21 @@ public class ProjectIndexer extends AbstractIndexer {
 				versionObject.addProperty("minor",
 						String.format("%s.%s", version.getMajor(), version.getMinor()));
 			}
-			source.add("version", versionObject);
+			target.add("version", versionObject);
 		}
 	}
 
-	private void indexDependencies(JsonObject source) {
+	private void indexDependencies(JsonObject source, JsonObject target) {
 		List<String> dependencies = determineRawDependencies(source);
 		if (dependencies != null) {
+			JsonObject dependenciesObject = new JsonObject();
+			JsonArray values = new JsonArray();
+			dependencies.forEach(values::add);
+			dependenciesObject.add("values", values);
 			String dependenciesId = computeDependenciesId(dependencies);
-			source.addProperty("dependenciesId", dependenciesId);
-			source.addProperty("dependenciesCount", dependencies.size());
+			dependenciesObject.addProperty("id", dependenciesId);
+			dependenciesObject.addProperty("count", dependencies.size());
+			target.add("dependencies", dependenciesObject);
 		}
 	}
 

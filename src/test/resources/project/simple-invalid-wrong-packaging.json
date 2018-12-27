@@ -6,6 +6,8 @@
   "_score": null,
   "_source": {
     "generationTimestamp": 1451606297000,
+    "clientId": "my-ide",
+    "clientVersion": "1.2.3",
     "requestIp": "127.0.0.1",
     "requestIpv4": "127.0.0.1",
     "groupId": "com.example.test",
@@ -14,24 +16,18 @@
     "bootVersion": "2.1.1.RELEASE",
     "javaVersion": "1.8",
     "language": "java",
-    "packaging": "jar",
+    "packaging": "pom",
     "type": "maven-project",
     "dependencies": [
       "web",
       "security"
     ],
-    "dependenciesId": "security web",
-    "invalid": false,
+    "invalid": true,
     "invalidJavaVersion": false,
     "invalidLanguage": false,
-    "invalidPackaging": false,
+    "invalidPackaging": true,
     "invalidType": false,
     "invalidDependencies": [],
-    "requestCountry": "ID",
-    "version": {
-      "id": "2.1.1.RELEASE",
-      "major": "2",
-      "minor": "2.1"
-    }
+    "requestCountry": "ID"
   }
 }
