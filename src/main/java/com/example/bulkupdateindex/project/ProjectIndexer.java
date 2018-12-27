@@ -78,8 +78,11 @@ public class ProjectIndexer extends AbstractIndexer {
 		object.addProperty("artifactId", source.get("artifactId").getAsString());
 		object.addProperty("javaVersion", source.get("javaVersion").getAsString());
 		object.addProperty("language", source.get("language").getAsString());
-		object.addProperty("packageName", source.get("packageName").getAsString());
 		object.addProperty("packaging", source.get("packaging").getAsString());
+		String packageName = getText(source, "packageName");
+		if (packageName != null) {
+			object.addProperty("packageName", packageName);
+		}
 		return object;
 	}
 
