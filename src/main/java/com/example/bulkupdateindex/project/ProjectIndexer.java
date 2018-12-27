@@ -61,6 +61,7 @@ public class ProjectIndexer extends AbstractIndexer {
 		indexDependencies(source, target);
 		indexBuildSystem(source, target);
 		indexClient(source, target);
+		indexErrorState(source, target);
 		container.addAction(new Index.Builder(target)
 				.index(container.getDocument().get("_index").getAsString() + "-new")
 				.type("request").build());
@@ -124,6 +125,33 @@ public class ProjectIndexer extends AbstractIndexer {
 		clientObject.addProperty("ip", source.get("requestIpv4").getAsString());
 		clientObject.addProperty("country", source.get("requestCountry").getAsString());
 		target.add("client", clientObject);
+	}
+
+	private void indexErrorState(JsonObject source, JsonObject target) {
+		boolean invalid = source.get("invalid").getAsBoolean();
+		if (!invalid) {
+			return;
+		}
+		JsonObject errorState = new JsonObject();
+		errorState.addProperty("invalid", true);
+		if (getBoolean(source, "invalidJavaVersion")) {
+			errorState.addProperty("javaVersion", true);
+		}
+		if (getBoolean(source, "invalidLanguage")) {
+			errorState.addProperty("language", true);
+		}
+		if (getBoolean(source, "invalidPackaging")) {
+			errorState.addProperty("packaging", true);
+		}
+		if (getBoolean(source, "invalidType")) {
+			errorState.addProperty("type", true);
+		}
+		target.add("errorState", errorState);
+	}
+
+	private boolean getBoolean(JsonObject source, String propertyName) {
+		JsonElement element = source.get(propertyName);
+		return element != null && element.getAsBoolean();
 	}
 
 	private Version determineSpringBootVersion(JsonObject source) {

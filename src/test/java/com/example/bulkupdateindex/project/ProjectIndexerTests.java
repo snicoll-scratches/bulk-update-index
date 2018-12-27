@@ -94,6 +94,71 @@ public class ProjectIndexerTests {
 	}
 
 	@Test
+	public void indexValidRequest() {
+		IndexActionContainer container = migrate("project/simple-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("errorState")).isFalse();
+	}
+
+	@Test
+	public void indexWrongJavaVersionRequest() {
+		IndexActionContainer container = migrate(
+				"project/simple-invalid-wrong-java-version.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("errorState")).isTrue();
+		JsonObject errorState = source.get("errorState").getAsJsonObject();
+		assertThat(errorState.get("invalid").getAsBoolean()).isTrue();
+		assertThat(errorState.get("javaVersion").getAsBoolean()).isTrue();
+		assertThat(errorState.size()).isEqualTo(2);
+		assertThat(source.get("javaVersion").getAsString()).isEqualTo("abc");
+	}
+
+	@Test
+	public void indexWrongLanguageRequest() {
+		IndexActionContainer container = migrate(
+				"project/simple-invalid-wrong-language.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("errorState")).isTrue();
+		JsonObject errorState = source.get("errorState").getAsJsonObject();
+		assertThat(errorState.get("invalid").getAsBoolean()).isTrue();
+		assertThat(errorState.get("language").getAsBoolean()).isTrue();
+		assertThat(errorState.size()).isEqualTo(2);
+		assertThat(source.get("language").getAsString()).isEqualTo("c");
+	}
+
+	@Test
+	public void indexWrongPackagingRequest() {
+		IndexActionContainer container = migrate(
+				"project/simple-invalid-wrong-packaging.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("errorState")).isTrue();
+		JsonObject errorState = source.get("errorState").getAsJsonObject();
+		assertThat(errorState.get("invalid").getAsBoolean()).isTrue();
+		assertThat(errorState.get("packaging").getAsBoolean()).isTrue();
+		assertThat(errorState.size()).isEqualTo(2);
+		assertThat(source.get("packaging").getAsString()).isEqualTo("pom");
+	}
+
+	@Test
+	public void indexWrongTypeRequest() {
+		IndexActionContainer container = migrate(
+				"project/simple-invalid-wrong-type.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("errorState")).isTrue();
+		JsonObject errorState = source.get("errorState").getAsJsonObject();
+		assertThat(errorState.get("invalid").getAsBoolean()).isTrue();
+		assertThat(errorState.get("type").getAsBoolean()).isTrue();
+		assertThat(errorState.size()).isEqualTo(2);
+		assertThat(source.get("type").getAsString()).isEqualTo("build");
+		assertThat(source.has("buildSystem")).isFalse();
+	}
+
+	@Test
 	public void indexReturnAction() {
 		JsonObject source = read("project/simple-input.json");
 		List<BulkableAction<?>> actions = this.indexer.index(source);
