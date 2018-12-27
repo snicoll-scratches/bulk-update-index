@@ -129,8 +129,14 @@ public class ProjectIndexer extends AbstractIndexer {
 		if (clientVersion != null) {
 			clientObject.addProperty("version", clientVersion);
 		}
-		clientObject.addProperty("ip", source.get("requestIpv4").getAsString());
-		clientObject.addProperty("country", source.get("requestCountry").getAsString());
+		String requestIp = getText(source, "requestIpv4");
+		if (requestIp != null) {
+			clientObject.addProperty("ip", requestIp);
+		}
+		String requestCountry = getText(source, "requestCountry");
+		if (requestCountry != null) {
+			clientObject.addProperty("country", requestCountry);
+		}
 		target.add("client", clientObject);
 	}
 

@@ -106,6 +106,32 @@ public class ProjectIndexerTests {
 	}
 
 	@Test
+	public void indexClientWithNoCountryInformation() {
+		IndexActionContainer container = migrate("project/simple-input-no-country.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("client")).isTrue();
+		JsonObject client = source.get("client").getAsJsonObject();
+		assertThat(client.get("id").getAsString()).isEqualTo("my-ide");
+		assertThat(client.get("version").getAsString()).isEqualTo("1.2.3");
+		assertThat(client.get("ip").getAsString()).isEqualTo("127.0.0.1");
+		assertThat(client.size()).isEqualTo(3);
+	}
+
+	@Test
+	public void indexClientWithNoIp() {
+		IndexActionContainer container = migrate("project/simple-input-no-ip.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("client")).isTrue();
+		JsonObject client = source.get("client").getAsJsonObject();
+		assertThat(client.get("id").getAsString()).isEqualTo("my-ide");
+		assertThat(client.get("version").getAsString()).isEqualTo("1.2.3");
+		assertThat(client.get("country").getAsString()).isEqualTo("ID");
+		assertThat(client.size()).isEqualTo(3);
+	}
+
+	@Test
 	public void indexValidRequest() {
 		IndexActionContainer container = migrate("project/simple-input.json");
 		assertThat(container.getActions()).hasSize(1);
