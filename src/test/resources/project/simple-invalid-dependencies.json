@@ -1,0 +1,36 @@
+{
+  "_index": "initializr-2015",
+  "_type": "request",
+  "_id": "AVLHGNWntD7BNNLRBAr5",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "generationTimestamp": 1451606297000,
+    "clientId": "my-ide",
+    "clientVersion": "1.2.3",
+    "requestIp": "127.0.0.1",
+    "requestIpv4": "127.0.0.1",
+    "groupId": "com.example.test",
+    "artifactId": "my-test",
+    "packageName": "com.example.test.app",
+    "bootVersion": "2.1.1.RELEASE",
+    "javaVersion": "1.8",
+    "language": "java",
+    "packaging": "pom",
+    "type": "maven-project",
+    "dependencies": [
+      "web",
+      "security"
+    ],
+    "invalid": true,
+    "invalidJavaVersion": false,
+    "invalidLanguage": false,
+    "invalidPackaging": false,
+    "invalidType": false,
+    "invalidDependencies": [
+      "h2",
+      "h3"
+    ],
+    "requestCountry": "ID"
+  }
+}

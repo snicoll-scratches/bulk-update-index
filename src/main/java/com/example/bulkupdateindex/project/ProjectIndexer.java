@@ -146,6 +146,10 @@ public class ProjectIndexer extends AbstractIndexer {
 		if (getBoolean(source, "invalidType")) {
 			errorState.addProperty("type", true);
 		}
+		JsonArray invalidDependencies = source.getAsJsonArray("invalidDependencies");
+		if (invalidDependencies != null && invalidDependencies.size() > 0) {
+			errorState.add("dependencies", invalidDependencies);
+		}
 		target.add("errorState", errorState);
 	}
 
@@ -167,10 +171,6 @@ public class ProjectIndexer extends AbstractIndexer {
 	}
 
 	private List<String> determineRawDependencies(JsonObject source) {
-		if (source.has("invalidDependencies")
-				&& source.get("invalidDependencies").getAsJsonArray().size() > 0) {
-			return null;
-		}
 		JsonArray array = source.getAsJsonArray("dependencies");
 		if (array == null) {
 			return Collections.emptyList();

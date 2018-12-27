@@ -159,6 +159,22 @@ public class ProjectIndexerTests {
 	}
 
 	@Test
+	public void indexInvalidDependenciesRequest() {
+		IndexActionContainer container = migrate(
+				"project/simple-invalid-dependencies.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("errorState")).isTrue();
+		JsonObject errorState = source.get("errorState").getAsJsonObject();
+		assertThat(errorState.get("invalid").getAsBoolean()).isTrue();
+		assertThat(errorState.get("dependencies").getAsJsonArray())
+				.containsExactly(new JsonPrimitive("h2"), new JsonPrimitive("h3"));
+		assertThat(errorState.size()).isEqualTo(2);
+		assertThat(source.getAsJsonObject("dependencies").getAsJsonArray("values"))
+				.containsExactly(new JsonPrimitive("web"), new JsonPrimitive("security"));
+	}
+
+	@Test
 	public void indexReturnAction() {
 		JsonObject source = read("project/simple-input.json");
 		List<BulkableAction<?>> actions = this.indexer.index(source);
