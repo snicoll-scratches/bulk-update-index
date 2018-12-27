@@ -150,12 +150,21 @@ public class ProjectIndexer extends AbstractIndexer {
 		if (invalidDependencies != null && invalidDependencies.size() > 0) {
 			errorState.add("dependencies", invalidDependencies);
 		}
+		String message = getText(source, "errorMessage");
+		if (!message.isEmpty()) {
+			errorState.addProperty("message", message);
+		}
 		target.add("errorState", errorState);
 	}
 
 	private boolean getBoolean(JsonObject source, String propertyName) {
 		JsonElement element = source.get(propertyName);
 		return element != null && element.getAsBoolean();
+	}
+
+	private String getText(JsonObject source, String propertyName) {
+		JsonElement element = source.get(propertyName);
+		return (element != null) ? element.getAsString() : "";
 	}
 
 	private Version determineSpringBootVersion(JsonObject source) {

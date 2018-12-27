@@ -175,6 +175,20 @@ public class ProjectIndexerTests {
 	}
 
 	@Test
+	public void indexInvalidRequestWithErrorMessage() {
+		IndexActionContainer container = migrate(
+				"project/simple-invalid-error-message.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("errorState")).isTrue();
+		JsonObject errorState = source.get("errorState").getAsJsonObject();
+		assertThat(errorState.get("invalid").getAsBoolean()).isTrue();
+		assertThat(errorState.get("message").getAsString())
+				.isEqualTo("Something went wrong");
+		assertThat(errorState.size()).isEqualTo(2);
+	}
+
+	@Test
 	public void indexReturnAction() {
 		JsonObject source = read("project/simple-input.json");
 		List<BulkableAction<?>> actions = this.indexer.index(source);
