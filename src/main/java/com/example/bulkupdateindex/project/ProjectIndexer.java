@@ -59,6 +59,7 @@ public class ProjectIndexer extends AbstractIndexer {
 		JsonObject target = initializeDocument(source);
 		indexVersion(source, target);
 		indexDependencies(source, target);
+		indexBuildSystem(source, target);
 		container.addAction(new Index.Builder(target)
 				.index(container.getDocument().get("_index").getAsString() + "-new")
 				.type("request").build());
@@ -104,6 +105,14 @@ public class ProjectIndexer extends AbstractIndexer {
 			dependenciesObject.addProperty("id", dependenciesId);
 			dependenciesObject.addProperty("count", dependencies.size());
 			target.add("dependencies", dependenciesObject);
+		}
+	}
+
+	private void indexBuildSystem(JsonObject source, JsonObject target) {
+		String type = source.get("type").getAsString();
+		String[] elements = type.split("-");
+		if (elements.length == 2) {
+			target.addProperty("buildSystem", elements[0]);
 		}
 	}
 

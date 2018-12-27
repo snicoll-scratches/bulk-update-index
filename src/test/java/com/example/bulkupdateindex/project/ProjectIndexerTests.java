@@ -72,6 +72,15 @@ public class ProjectIndexerTests {
 	}
 
 	@Test
+	public void indexBuildSystem() {
+		IndexActionContainer container = migrate("project/simple-input.json");
+		assertThat(container.getActions()).hasSize(1);
+		JsonObject source = assertIndexAction(container.getActions().get(0));
+		assertThat(source.has("buildSystem")).isTrue();
+		assertThat(source.get("buildSystem").getAsString()).isEqualTo("maven");
+	}
+
+	@Test
 	public void indexReturnAction() {
 		JsonObject source = read("project/simple-input.json");
 		List<BulkableAction<?>> actions = this.indexer.index(source);
